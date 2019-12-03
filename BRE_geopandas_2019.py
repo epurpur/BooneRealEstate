@@ -5,12 +5,12 @@ Created on Tue Dec  3 09:33:02 2019
 
 @author: ep9k
 """
-
+import pandas as pd
 import geopandas as gpd
 
 filepath = '/Users/ep9k/Desktop/BRE/BRE 2019/AllKeeperAddresses_2019_geopandas.shp'
 
-df = gpd.read_file(filepath)
+keeper_2019_df = gpd.read_file(filepath)
 
 
 #### DROP UNNEEDED COLUMNS FROM DATAFRAME ####
@@ -28,18 +28,62 @@ columns_to_drop = ['id_1', 'fid', 'id_0', 'id', 'GNISID', 'MAPREF', 'MUNIT', 'PA
                    '2019AllK15', '2019AllK16', '2019AllK17', '2019AllK18', '2019AllK19', '2019AllK20', '2019AllK21', '2019AllK22', '2019AllK23', '2019AllK24',
                    '2019AllK25', '2019AllK26', '2019AllK27', '2019AllK28', '2019AllK29', '2019AllK30', '2019AllK31', '2019AllK32', '2019AllK33', '2019AllK34',
                    '2019AllK35', '2019AllK36', '2019AllK39', '2019AllK40', '2019AllK46', '2019AllK47', '2019AllK48', '2019AllK49',
-                   '2019AllK50', '2019AllK51', '2019AllK52', '2019AllK53', '2019AllK54', '2019AllK55', '2019AllK56', '2019AllK57', '2019AllK58']
+                   '2019AllK50', '2019AllK51', '2019AllK52', '2019AllK53', '2019AllK54', '2019AllK55', '2019AllK56', '2019AllK57', '2019AllK58',
+                   '2018Deca_2', '2019AllK37', '2019AllK41', '2018Deca_3', '2019AllK38', '2019AllK42']
 
-df.drop(columns_to_drop, inplace=True, axis=1)
+keeper_2019_df.drop(columns_to_drop, inplace=True, axis=1)
 
-#### EXTRACT VACANT LAND FROM LIST   ####
+#rename columns so I can tell what is what
+keeper_2019_df.rename(columns = {'2019AllK43':'Owner_Moved', 
+                       '2019AllK44':'Sold_In_Last_Year', 
+                       '2019AllK45':'No_Change',
+                       '2018Keeper':'2+_Removed',
+                       '2018Keep_1':'Excluded_Subdivisions'}, inplace=True)
 
-#first qualifier is that if PARUSEDESC = 'RESIDENTIAL VACANT', drop it     (578 parcels)
-df.drop(df.loc[df['PARUSEDESC'] == 'RESIDENTIAL VACANT'].index, inplace=True)
 
-#second qualifier is if 'PARVAL' = 'LANDVAL'    (684 parcels)
-#not sure if I should drop this or not
-df.drop(df.loc[df['LANDVAL'] == df['PARVAL']].index, inplace=True)
+#### EXTRACT VACANT LAND FROM LIST or MAKE 'VACANT LAND' COLUMN   ####
+
+#First, create 'VacantLand' column and populate it with vacant land parcels (1262 parcels)
+keeper_2019_df.loc[(keeper_2019_df['PARUSEDESC'] == 'RESIDENTIAL VACANT'), 'VacantLand'] = 'Yes'     #For Watauga County only
+keeper_2019_df.loc[(keeper_2019_df['LANDVAL'] == keeper_2019_df['PARVAL']), 'VacantLand'] = 'Yes'                # If Parcel Value = Land Value, we assume there is no structure and its vacant land
+
+
+#Now create 'VacantLandValue' column for parcels > $100k and >$200k
+keeper_2019_df.loc[(keeper_2019_df['VacantLand'] == 'Yes') & (keeper_2019_df['PARVAL'] > 100000), 'VacantLandValue'] = '> 100k'  #936 rows
+keeper_2019_df.loc[(keeper_2019_df['VacantLand'] == 'Yes') & (keeper_2019_df['PARVAL'] > 200000), 'VacantLandValue'] = '> 200k'  #180 rows
+
+
+#now drop 'Yes' rows from the VacantLand column  #DOES THIS NEED TO HAPPEN?
+#df.drop(df.loc[df['VacantLand'] == 'Yes'].index, inplace=True)
+
+
+
+#### EXTRACT CONDOS FROM 2019 KEEPERS ####
+
+condos_dataset_path = '/Users/ep9k/Desktop/BRE/MattCondoAddressList.xlsx'
+
+condos_df = pd.read_excel(condos_dataset_path)
+condo_parcel_ids = condos_df['Parcel ID (PIN)'].tolist()
+
+print(keeper_2019_df['ALTPARNO'])
+#match_count = 0
+#
+#for i in condo_parcel_ids:
+#    if keeper_2019_df['NPARNO'].isin(i):
+#        match_count += 1
+#print(match_count)
+
+ 
+
+
+
+
+
+
+
+
+
+
 
 
 
