@@ -52,7 +52,6 @@ all_keepers_df.drop_duplicates(subset='nparno', keep='first', inplace=True)
 
 
 
-
 #### READ HELPER GPKG FILE TO JOIN MATT'S COLUMNS
 
 filepath = '/Users/ep9k/Desktop/BRE/BRE 2019/keepers_2019.gpkg'
@@ -84,40 +83,47 @@ all_keepers_df.drop(columns_to_drop, inplace=True, axis=1)
 
 
 #### EXTRACT MATCHING CONDOS FROM 2019 KEEPERS####
+#APPARENTLY THERE AREN'T ANY MATCHING CONDOS??
 condos_dataset_path = '/Users/ep9k/Desktop/BRE/MattCondoAddressList.xlsx'
 
 condos_df = pd.read_excel(condos_dataset_path)
 
 #check by Parcel ID (Parcel ID (PIN)/ALTPARNO)
 condo_parcel_id_list = condos_df['Parcel ID (PIN)'].tolist()
+all_keepers_df.drop(all_keepers_df[all_keepers_df['altparno'].isin(condo_parcel_id_list)].index, inplace=True)   #0 matches?
 
-#all_keepers_df.drop(all_keepers_df[all_keepers_df['altparno'].isin(condo_parcel_id_list)].index, inplace=True)  #0 matches?
-print(all_keepers_df['2901821323000'.isin(condo_parcel_id_list)])
-    
-#2901821323000
+#check by Parcel ID (Parcel ID (PIN)/PARNO)
+all_keepers_df.drop(all_keepers_df[all_keepers_df['parno'].isin(condo_parcel_id_list)].index, inplace=True)  #0 matches?
+
+#check by address. (FullMailAdd_condo/FullAddress)
+condo_mailing_address_list = condos_df['FullMailAdd_condo'].tolist()
+all_keepers_df.drop(all_keepers_df[all_keepers_df['FullAddress'].isin(condo_mailing_address_list)].index, inplace=True)  #0 matches? 
 
 
 
+####REMOVE NON-RESIDENTIAL PARCELS BY NPARNO
+####THESE ARE PARCELS I MANUALLY SELECTED IN QGIS WHICH ARE NOT RESIDENTIAL. READ THE .GPKG IN AND DROP THEM BASED ON THEIR NPARNO
+not_residential_parcels_filepath = '/Users/ep9k/Desktop/BRE/not_residential_removed_parcels.gpkg'
+not_residential_parcels_df = gpd.read_file(not_residential_parcels_filepath, layer='not_residential_removed_parcels')
 
+not_residential_ids_list = not_residential_parcels_df['nparno'].tolist()
 
+#compare nparno to all_keepers_df['nparno']
+all_keepers_df.drop(all_keepers_df[all_keepers_df['nparno'].isin(not_residential_ids_list)].index, inplace=True)
 
 
 
 ####CONVERT DATAFRAME BACK TO GEODATAFRAME
-#
-#all_keepers_df = gpd.GeoDataFrame(all_keepers_df,
-#                                  crs={'init': 'epsg: 2264'},
-#                                  geometry = all_keepers_df['geometry'])
-#
-#
-#all_keepers_df.to_file('/Users/ep9k/Desktop/test_out2.gpkg', driver='GPKG')
-#
-#
-#
-#
-#
-#
-####LAST STEP IS TO MANUALLY REMOVE UNDESIRABLE PARCELS SUCH AS CHURCHES, COMMERCIAL, BY HAND IN QGIS
+
+all_keepers_df = gpd.GeoDataFrame(all_keepers_df,
+                                  crs={'init': 'epsg: 2264'},
+                                  geometry = all_keepers_df['geometry'])
+
+
+all_keepers_df.to_file('/Users/ep9k/Desktop/test_out2.gpkg', driver='GPKG')
+
+
+
 
 
 

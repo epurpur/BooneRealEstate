@@ -71,6 +71,7 @@ condos_df = pd.read_excel(condos_dataset_path)
 #check by Parcel ID (Parcel ID (PIN)/ALTPARNO)
 condo_parcel_id_list = condos_df['Parcel ID (PIN)'].tolist()
 
+
 keeper_2019_df.drop(keeper_2019_df[keeper_2019_df['ALTPARNO'].isin(condo_parcel_id_list)].index, inplace=True)  #12 matches
 
 
