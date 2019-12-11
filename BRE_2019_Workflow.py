@@ -48,8 +48,9 @@ import pandas as pd
 filepath = '/Users/ep9k/Desktop/BRE/BRE 2019/allkeepers_2019.gpkg'
 
 all_keepers_df = gpd.read_file(filepath, layer='allkeepers_2019')
-all_keepers_df.drop_duplicates(subset='nparno', keep='first', inplace=True)
 
+#drop duplicates because there are duplicate parcels selected which exist on boundaries of zones
+all_keepers_df.drop_duplicates(subset='nparno', keep='first', inplace=True)
 
 
 #### READ HELPER GPKG FILE TO JOIN MATT'S COLUMNS
@@ -57,9 +58,13 @@ all_keepers_df.drop_duplicates(subset='nparno', keep='first', inplace=True)
 filepath = '/Users/ep9k/Desktop/BRE/BRE 2019/keepers_2019.gpkg'
 helper_df = gpd.read_file(filepath, layer='keepers_2019')
 
-####MERGE these columns from helper_df to all_keepers_df: '2+ Removed', 'Excluded_Subdivisions', 'Owner_moved', 'sold_in_last_year', 'No_Change', 'VacantLand', 'VacantLandValue'
 
-all_keepers_df = all_keepers_df.merge(helper_df, left_on='nparno', right_on='NPARNO')
+
+####MERGE these columns from helper_df to all_keepers_df: '2+ Removed', 'Excluded_Subdivisions', 'Owner_moved', 'sold_in_last_year', 'No_Change', 'VacantLand', 'VacantLandValue'
+#I want to do a left join. This means I will keep all the rows in the original dataframe (all_keepers_df) and just have null data for the ones that don't match from the one
+#I am matching to (helper_df)
+all_keepers_df = all_keepers_df.merge(helper_df, how='left', left_on='nparno', right_on='NPARNO')
+
 
 ####DROP UNNEEDED COLUMNS FROM DATAFRAME
 
@@ -81,36 +86,39 @@ columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
 all_keepers_df.drop(columns_to_drop, inplace=True, axis=1)
 
 
-
 #### EXTRACT MATCHING CONDOS FROM 2019 KEEPERS####
-#APPARENTLY THERE AREN'T ANY MATCHING CONDOS??
+
+#this should read from postgresql in the future
 condos_dataset_path = '/Users/ep9k/Desktop/BRE/MattCondoAddressList.xlsx'
 
 condos_df = pd.read_excel(condos_dataset_path)
 
 #check by Parcel ID (Parcel ID (PIN)/ALTPARNO)
 condo_parcel_id_list = condos_df['Parcel ID (PIN)'].tolist()
-all_keepers_df.drop(all_keepers_df[all_keepers_df['altparno'].isin(condo_parcel_id_list)].index, inplace=True)   #0 matches?
+all_keepers_parcel_ids = all_keepers_df['parno'].tolist()
 
-#check by Parcel ID (Parcel ID (PIN)/PARNO)
-all_keepers_df.drop(all_keepers_df[all_keepers_df['parno'].isin(condo_parcel_id_list)].index, inplace=True)  #0 matches?
+all_keepers_df.drop(all_keepers_df[all_keepers_df['altparno'].isin(condo_parcel_id_list)].index, inplace=True)   #12 matches
+
+##check by Parcel ID (Parcel ID (PIN)/PARNO)
+all_keepers_df.drop(all_keepers_df[all_keepers_df['parno'].isin(condo_parcel_id_list)].index, inplace=True)  #65 matches
 
 #check by address. (FullMailAdd_condo/FullAddress)
 condo_mailing_address_list = condos_df['FullMailAdd_condo'].tolist()
 all_keepers_df.drop(all_keepers_df[all_keepers_df['FullAddress'].isin(condo_mailing_address_list)].index, inplace=True)  #0 matches? 
 
 
-
 ####REMOVE NON-RESIDENTIAL PARCELS BY NPARNO
 ####THESE ARE PARCELS I MANUALLY SELECTED IN QGIS WHICH ARE NOT RESIDENTIAL. READ THE .GPKG IN AND DROP THEM BASED ON THEIR NPARNO
-not_residential_parcels_filepath = '/Users/ep9k/Desktop/BRE/not_residential_removed_parcels.gpkg'
-not_residential_parcels_df = gpd.read_file(not_residential_parcels_filepath, layer='not_residential_removed_parcels')
+
+#this should read from postgresql in the future
+not_residential_parcels_filepath = '/Users/ep9k/Desktop/BRE/BRE 2019/all_removed_res_parcels.gpkg'
+not_residential_parcels_df = gpd.read_file(not_residential_parcels_filepath)
+
 
 not_residential_ids_list = not_residential_parcels_df['nparno'].tolist()
 
 #compare nparno to all_keepers_df['nparno']
 all_keepers_df.drop(all_keepers_df[all_keepers_df['nparno'].isin(not_residential_ids_list)].index, inplace=True)
-
 
 
 ####CONVERT DATAFRAME BACK TO GEODATAFRAME
@@ -119,7 +127,7 @@ all_keepers_df = gpd.GeoDataFrame(all_keepers_df,
                                   crs={'init': 'epsg: 2264'},
                                   geometry = all_keepers_df['geometry'])
 
-
+#now I have a geodataframe which I can use in QGIS. For some reason this doesn't work to export as .csv
 all_keepers_df.to_file('/Users/ep9k/Desktop/test_out2.gpkg', driver='GPKG')
 
 
