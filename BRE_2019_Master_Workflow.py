@@ -36,13 +36,13 @@ all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
 #create full address columns for both property address and mailing address in all_2019_parcels and original_mailing_list
 #I cant make a full property address. All I have is the 'sideadd' column in all_2019_parcels which does not have a city!
-all_2019_parcels['FullMailingAddress'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
-all_2019_parcels['FullMailingAddress'] = all_2019_parcels['FullMailingAddress'].str.replace(' ','')   #got rid of all spaces for simplicity
+all_2019_parcels['FullMailingAddress_parcels'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
+all_2019_parcels['FullMailingAddress_parcels'] = all_2019_parcels['FullMailingAddress_parcels'].str.replace(' ','')   #got rid of all spaces for simplicity
 
 all_2019_parcels['siteadd'] = all_2019_parcels['siteadd'].str.replace(' ','')
 
-original_mailing_list['FullMailingAddress'] = original_mailing_list['Mailing #'] + ' ' + original_mailing_list['Mailing Address'] + ' ' + original_mailing_list['Mailing City'] + ' ' + original_mailing_list['Mailing State']    
-original_mailing_list['FullMailingAddress'] = original_mailing_list['FullMailingAddress'].str.replace(' ','')   #got rid of all spaces for simplicity
+original_mailing_list['FullMailingAddress_original'] = original_mailing_list['Mailing #'] + ' ' + original_mailing_list['Mailing Address'] + ' ' + original_mailing_list['Mailing City'] + ' ' + original_mailing_list['Mailing State']    
+original_mailing_list['FullMailingAddress_original'] = original_mailing_list['FullMailingAddress_original'].str.replace(' ','')   #got rid of all spaces for simplicity
 ##I am leaving off the state to attempt to match this to all_parcels_2019['siteadd'] column
 original_mailing_list['FullPropertyAddress'] = original_mailing_list['Property #'] + ' ' + original_mailing_list['Property ST']
 original_mailing_list['FullPropertyAddress'] = original_mailing_list['FullPropertyAddress'].str.replace(' ','')
@@ -56,22 +56,26 @@ all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull
 all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull(), 'Subdivision Final'] = all_2019_parcels['SUBDIVISION']     #keeping SUBDIVISION column
 results1 = all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull()]                   #1155 matches
 
+####DO I HAVE RIGHT COLUMN NAMES?
 #drop columns I merged to make results cleaner
-columns_to_drop = [ 'FullMailingAddress_x','Last Name','First Name','2+ Removed','SUBDIVISION','Property #','Property ST','Property City','Property State',
+columns_to_drop = [ 'FullMailingAddress_original','Last Name','First Name','2+ Removed','SUBDIVISION','Property #','Property ST','Property City','Property State',
  'Property Zipcode','TEMP REMOVED','PIN (Parcel Indentifier Number)','Zone','Section','Mailing #','Mailing Address','Mailing City','Mailing State','Mailing Zipcode',
- '1 Returned','Corrected','ADDED','Unnamed: 21','Unnamed: 22','Unnamed: 23','Unnamed: 24','Unnamed: 25','Unnamed: 26','FullMailingAddress_y','FullPropertyAddress']
+ '1 Returned','Corrected','ADDED','Unnamed: 21','Unnamed: 22','Unnamed: 23','Unnamed: 24','Unnamed: 25','Unnamed: 26','FullMailingAddress_parcels','FullPropertyAddress']
 all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
+all_2019_parcels.drop_duplicates(inplace=True)
 
-#next try by altparno to 'PIN (Parcel Indentifier Number)'
-all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='altparno', right_on='PIN (Parcel Indentifier Number)')
-all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull(), '2+ Removed Final'] = all_2019_parcels['2+ Removed']       #keeping 2+ removed column
-all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull(), 'Subdivision Final'] = all_2019_parcels['SUBDIVISION']     #keeping SUBDIVISION column
-results2 = all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull()]                   
+##next try by altparno to 'PIN (Parcel Indentifier Number)'      #CANT DO THIS, CODE JUST RUNS FOREVER WITHOUT OUTPUT
+#all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='altparno', right_on='PIN (Parcel Indentifier Number)')
+#all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull(), '2+ Removed Final'] = all_2019_parcels['2+ Removed']       #keeping 2+ removed column
+#all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull(), 'Subdivision Final'] = all_2019_parcels['SUBDIVISION']     #keeping SUBDIVISION column
+#results2 = all_2019_parcels.loc[all_2019_parcels['PIN (Parcel Indentifier Number)'].notnull()]                   
 
-
-
-#all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='FullMailingAddress', right_on='FullMailingAddress')
+####START HERE
+#all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='FullMailingAddress_parcels', right_on='FullMailingAddress_original')
+#all_2019_parcels.loc[all_2019_parcels['FullMailingAddress_original'].notnull(), '2+ Removed Final'] = all_2019_parcels['2+ Removed']       #keeping 2+ removed column
+#all_2019_parcels.loc[all_2019_parcels['FullMailingAddress_original'].notnull(), 'Subdivision Final'] = all_2019_parcels['SUBDIVISION']     #keeping SUBDIVISION column
+#results2 = all_2019_parcels.loc[all_2019_parcels['FullMailingAddress_original'].notnull()]                   
 
 
 
