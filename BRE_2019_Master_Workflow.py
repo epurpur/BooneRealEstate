@@ -126,8 +126,6 @@ columns_to_drop = ['Parcel ID','Last Name','First Name','Mailing #','Mailing Add
 all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
 
-
-#NOT SURE IF THIS WILL WORK
 #Some parcels match to a certain point (first 15 characters)
 original_condo_list['Parcel ID 15'] = original_condo_list['Parcel ID'].str[:15]
 all_2019_parcels = all_2019_parcels.merge(original_condo_list, how='left', left_on=all_2019_parcels['parno'].str[:15], right_on='Parcel ID 15')
@@ -145,28 +143,76 @@ columns_to_drop = ['Parcel ID','Last Name','First Name','Mailing #','Mailing Add
 
 all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
-
-####START HERE.  HAVE I MATCHED THE CONDOS UP TO ALL PARCELS AS MUCH AS POSSIBLE?
-
-
-##create full address columns for both property address and mailing address in all_2019_parcels and original_mailing_list
-##I cant make a full property address. All I have is the 'sideadd' column in all_2019_parcels which does not have a city!
+####MATCHING VIA ADDRESS DID NOT WORK AND PRODUCED CRAZY RESULTS
+#Now that I'm done trying to match via the parcel number, I will try to match via the property address and mailing address
+#create full address columns for both property address and mailing address in all_2019_parcels and original_mailing_list
+#I cant make a full property address. All I have is the 'sideadd' column in all_2019_parcels which does not have a city!
 #all_2019_parcels['FullMailingAddress_parcels'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
 #all_2019_parcels['FullMailingAddress_parcels'] = all_2019_parcels['FullMailingAddress_parcels'].str.replace(' ','')   #got rid of all spaces for simplicity
 #
-#all_2019_parcels['siteadd'] = all_2019_parcels['siteadd'].str.replace(' ','')
+#all_2019_parcels['siteadd'] = all_2019_parcels['siteadd'].str.replace(' ','')   #got rid of all spaces
 #
-#original_mailing_list['FullMailingAddress_original'] = original_mailing_list['Mailing #'] + ' ' + original_mailing_list['Mailing Address'] + ' ' + original_mailing_list['Mailing City'] + ' ' + original_mailing_list['Mailing State']    
-#original_mailing_list['FullMailingAddress_original'] = original_mailing_list['FullMailingAddress_original'].str.replace(' ','')   #got rid of all spaces for simplicity
-###I am leaving off the state to attempt to match this to all_parcels_2019['siteadd'] column
-#original_mailing_list['FullPropertyAddress'] = original_mailing_list['Property #'] + ' ' + original_mailing_list['Property ST']
-#original_mailing_list['FullPropertyAddress'] = original_mailing_list['FullPropertyAddress'].str.replace(' ','')
+#original_condo_list['FullMailingAddress_condos'] = original_condo_list['Mailing #'] + ' ' + original_condo_list['Mailing Address'] + ' ' + original_condo_list['Mailing City']
+#original_condo_list['FullMailingAddress_condos'] = original_condo_list['FullMailingAddress_condos'].str.replace(' ','')   #got rid of all spaces for simplicity
+#original_condo_list['FullMailingAddress_condos'] = original_condo_list['FullMailingAddress_condos'].str.upper()
 #
+#original_condo_list['FullPropertyAddress_condos'] = original_condo_list['Property #'] + ' ' + original_condo_list['Property Address']
+#original_condo_list['FullPropertyAddress_condos'] = original_condo_list['FullPropertyAddress_condos'].str.replace(' ','')   #got rid of all spaces for simplicity
+#original_condo_list['FullPropertyAddress_condos'] = original_condo_list['FullPropertyAddress_condos'].str.upper()
+#
+##Now try to match all_2019_parcels mailing address to original_condo_list mailing address
+#all_2019_parcels = all_2019_parcels.merge(original_condo_list, how='left', left_on='siteadd', right_on='FullPropertyAddress_condos')
+
+
+
+
+#5. Create other new columns
+# This includes Property type ('Home', 'Vacant Land', 'Condo'). Owner Moved, Sold_In_Last_Year, No_Change, VacantLandValue (>100k and <200k)
+
+#Start with Property Type column
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'RESIDENTIAL VACANT'), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'AGRICULTURAL-VACANT'), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'APARTMENT LAND VACANT'), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'COMMERCIAL LAND VACANT'), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'INDUSTRIAL TRACT VACANT'), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'UTILITY VACANT LAND'), 'Property Type'] = 'Vacant Land'
+
+all_2019_parcels.loc[(all_2019_parcels['landval'] == all_2019_parcels['parval']), 'Property Type'] == 'Vacant Land'
+
+#Make sure I got all Townhomes in Watauga County in condos list just in case
+all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'TOWNHOUSE'), 'Property Type'] = 'Condo'
+
+#Every condo in Matt's condo list has a subdivision so I can use the 'Condolist Subdivision' column to add condos to Property Type column
+all_2019_parcels.loc[all_2019_parcels['CondoList Subdivision'].notnull(), 'Property Type'] = 'Condo'    #There are 2214 total condos
+
+#all other parcels will be given the Property Type value of 'Home'. This includes a lot of non-residential properties but these will be filtered out later
+all_2019_parcels.loc[all_2019_parcels['Property Type'].isnull(), 'Property Type'] = 'Home'
+
+
+#####START HERE. I DONT WANT TO DROP CONDOS, WHICH IS CURRENTLY HAPPENING IN THIS SECTION
+##Now I am removing known non-residential parusedesc (and vacant land types) from the 'Property Type' column. This applies to Watauga County Only
+#residential_parusedesc = ['RESIDENTIAL 1 FAMILY','RESIDENTIAL 2 FAMILY','RESIDENTIAL 3 FAMILY','RESIDENTIAL STRUCTURE ON COMMERCIAL LAND',
+#                          'RESIDENTIAL UNDER CONSTRUCTION','RESIDENTIAL UNDER CONSTRUCTION/LONG TERM','RESIDENTIAL VACANT', 'AGRICULTURAL-VACANT',
+#                          'APARTMENT LAND VACANT','RESIDENTIAL VACANT','COMMERCIAL LAND VACANT','INDUSTRIAL TRACT VACANT','UTILITY VACANT LAND',
+#                           'TOWNHOUSE']
+#
+#for parusedesc in all_2019_parcels['parusedesc'].unique():
+#    if parusedesc not in residential_parusedesc:
+#        all_2019_parcels.drop(all_2019_parcels.loc[all_2019_parcels['parusedesc'] == parusedesc].index, inplace=True)    #dropping non-residential parcels!
+
+
+#####TODO: CREATE 'owner_moved','sold_in_last_year', 'no_change' columns 
+
+
+#Now Create 'VacantLandValue' column for parcels >$100k and >$200k
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 100000), 'VacantLandValue'] = '> $100k'
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 200000), 'VacantLandValue'] = '> $200k'
+
 
 
 
 #lastly, drop duplicate parcels
-#all_2019_parcels.drop_duplicates(inplace=True)
+all_2019_parcels.drop_duplicates(inplace=True)
 
 
 
