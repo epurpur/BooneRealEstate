@@ -23,7 +23,9 @@ import pandas as pd
 original_mailing_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.csv')          #11,827 addresses
 original_condo_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.csv')               #3,132 condos
 all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
+all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
 
+original_mailing_list.to_csv('/Users/ep9k/Desktop/testOutput.csv')
 
 #2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
 columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
@@ -185,28 +187,47 @@ all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'TOWNHOUSE'), 'Property 
 #Every condo in Matt's condo list has a subdivision so I can use the 'Condolist Subdivision' column to add condos to Property Type column
 all_2019_parcels.loc[all_2019_parcels['CondoList Subdivision'].notnull(), 'Property Type'] = 'Condo'    #There are 2214 total condos
 
-#all other parcels will be given the Property Type value of 'Home'. This includes a lot of non-residential properties but these will be filtered out later
-all_2019_parcels.loc[all_2019_parcels['Property Type'].isnull(), 'Property Type'] = 'Home'
+#all other parcels will be given the Property Type value of 'Home / Potentially not residential'. This includes a lot of non-residential properties but these will be filtered out later
+all_2019_parcels.loc[all_2019_parcels['Property Type'].isnull(), 'Property Type'] = 'Home / Potentially Not Residential'
 
 
-#####START HERE. I DONT WANT TO DROP CONDOS, WHICH IS CURRENTLY HAPPENING IN THIS SECTION
-##Now I am removing known non-residential parusedesc (and vacant land types) from the 'Property Type' column. This applies to Watauga County Only
-#residential_parusedesc = ['RESIDENTIAL 1 FAMILY','RESIDENTIAL 2 FAMILY','RESIDENTIAL 3 FAMILY','RESIDENTIAL STRUCTURE ON COMMERCIAL LAND',
-#                          'RESIDENTIAL UNDER CONSTRUCTION','RESIDENTIAL UNDER CONSTRUCTION/LONG TERM','RESIDENTIAL VACANT', 'AGRICULTURAL-VACANT',
-#                          'APARTMENT LAND VACANT','RESIDENTIAL VACANT','COMMERCIAL LAND VACANT','INDUSTRIAL TRACT VACANT','UTILITY VACANT LAND',
-#                           'TOWNHOUSE']
-#
-#for parusedesc in all_2019_parcels['parusedesc'].unique():
-#    if parusedesc not in residential_parusedesc:
-#        all_2019_parcels.drop(all_2019_parcels.loc[all_2019_parcels['parusedesc'] == parusedesc].index, inplace=True)    #dropping non-residential parcels!
+#These are the known residential parcel use codes from Watauga County only. I am re-labeling these as 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL 1 FAMILY', 'Property Type'] = 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL 2 FAMILY', 'Property Type'] = 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL 3 FAMILY', 'Property Type'] = 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL STRUCTURE ON COMMERCIAL LAND', 'Property Type'] = 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL UNDER CONSTRUCTION', 'Property Type'] = 'Home'
+all_2019_parcels.loc[all_2019_parcels['parusedesc'] == 'RESIDENTIAL UNDER CONSTRUCTION/LONG TERM', 'Property Type'] = 'Home'
+
 
 
 #####TODO: CREATE 'owner_moved','sold_in_last_year', 'no_change' columns 
+#convert 'saledate' column to datetime
+all_2019_parcels['saledate'] = pd.to_datetime(all_2019_parcels['saledate'])
+all_2019_parcels['Sold In Last Year'] = all_2019_parcels['saledate'].dt.year >= 2018
+all_2019_parcels['Sold In Last Year'] = all_2019_parcels['Sold In Last Year'].replace(True, 'Yes')        
+all_2019_parcels['Sold In Last Year'] = all_2019_parcels['Sold In Last Year'].replace(False, '')
+
+#Create the 'owner moved' column by comparing the 2018 Mailing Address to the 2019 Mailing Address
+#First build full Mailing Address column for 2018 data
+all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['MAILING ADDRESS'] + ' ' + all_2018_parcels['MAILING CITY'] + ' ' + all_2018_parcels['MAILING STATE']
+all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_2018'].str.replace(' ','')   #got rid of all spaces for simplicity
+
+#build full mailing address for all_2019_parcels
+all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
+all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
+
+######START HERE
+#compare 2018 mailing address to 2019 mailing address
+all_2019_parcels.loc[all_2019_parcels['Unit #'].notnull(), 'CondoList Unit #'] = all_2019_parcels['Unit #']       #this preserved the 'Unit #' column by moving it to a new column 'CondoList Unit #'
+
+
+
 
 
 #Now Create 'VacantLandValue' column for parcels >$100k and >$200k
-all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 100000), 'VacantLandValue'] = '> $100k'
-all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 200000), 'VacantLandValue'] = '> $200k'
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 100000), 'Vacant Land Value'] = '> $100k'
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 200000), 'Vacant Land Value'] = '> $200k'
 
 
 
