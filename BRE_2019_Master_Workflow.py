@@ -13,6 +13,7 @@ Following steps as outlines in Trello document: https://trello.com/b/Up0JxHMB/bo
 
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 
 
 #1. Starting from scratch from original documents. This includes...
@@ -217,11 +218,12 @@ all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_201
 all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
 all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
 
-######START HERE
-#compare 2018 mailing address to 2019 mailing address
-all_2019_parcels.loc[all_2019_parcels['Unit #'].notnull(), 'CondoList Unit #'] = all_2019_parcels['Unit #']       #this preserved the 'Unit #' column by moving it to a new column 'CondoList Unit #'
-
-
+######COME BACK TO 'OWNER MOVED' COLUMN LATER
+##compare 2018 mailing address to 2019 mailing address
+#all_2019_parcels['FullMail2018'] = all_2018_parcels['FullMailAddress_2018']
+##compare 2019 mail address to 2018 mail address to see if there are changes
+#
+#all_2019_parcels['Owner Moved'] = np.where(all_2019_parcels['FullMailingAddress_2019'] != all_2019_parcels['FullMail2018'], 'Yes', 'No')
 
 
 
@@ -236,5 +238,11 @@ all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all
 all_2019_parcels.drop_duplicates(inplace=True)
 
 
+#Export output to geopackage to use in PostgreSQL and in QGIS. Only execute at end because this step is slow
+#all_2019_parcels.to_file('/Users/ep9k/Desktop/all_2019_parcels.gpkg', driver='GPKG')
+
+
+#Now go into PostgreSQL and run the filters by zones and prices to get final "keepers" list. Could do this in python,
+#and may migrate it all to python later
 
 
