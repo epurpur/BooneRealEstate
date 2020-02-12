@@ -12,20 +12,22 @@ import CountyFunctions as cf
 
 
 #####FOR WATAUGA COUNTY#####EXAMPLE
-parcel_ids = ['2911911616001', '2911911616002']
 
+#Reading parcel IDs from the matt_condo_list file
 matt_condo_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.csv')
 
-#START HERE. parse matt_condo_list for rows that have County=='Watauga', then get Parcel ID for those rows
-watauga_parcel_ids = "empty"
-#try:
-#    cf.watauga_tax_scraping(parcel_ids)
-#    
-#except Exception:
-#    
-#    print(Exception)
-#    time.sleep(5)
-#    cf.watauga_tax_scraping(parcel_ids)
+watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']
+watauga_parcel_ids = watauga_parcel_ids['Parcel ID'].tolist()
+watauga_parcel_ids = watauga_parcel_ids[:15]    #taking just first 10 as test
+
+try:
+    cf.watauga_tax_scraping(watauga_parcel_ids)
+    
+except Exception:
+    
+    print(Exception)
+    time.sleep(3)
+    cf.watauga_tax_scraping(parcel_ids)
     
 
 
