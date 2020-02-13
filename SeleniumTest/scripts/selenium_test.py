@@ -8,51 +8,97 @@ import pandas as pd
 
 import CountyFunctions as cf
 
-#driver = webdriver.Chrome(executable_path="/Users/ep9k/Desktop/SeleniumTest/drivers/chromedriver")
+driver = webdriver.Chrome(executable_path="/Users/ep9k/Desktop/SeleniumTest/drivers/chromedriver")
 
 
-#####FOR WATAUGA COUNTY#####EXAMPLE
-
-#Reading parcel IDs from the matt_condo_list file
-matt_condo_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.csv')
-
-watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']
-watauga_parcel_ids = watauga_parcel_ids['Parcel ID'].tolist()
-watauga_parcel_ids = watauga_parcel_ids[:15]    #taking just first 10 as test
-
-try:
-    cf.watauga_tax_scraping(watauga_parcel_ids)
+######FOR WATAUGA COUNTY#####EXAMPLE
+##Reading parcel IDs from the matt_condo_list file
+#matt_condo_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.csv')
+#
+#watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']
+#watauga_parcel_ids = watauga_parcel_ids['Parcel ID'].tolist()
+#watauga_parcel_ids = watauga_parcel_ids[:15]    #taking just first 10 as test
+#
+#try:
+#    cf.watauga_tax_scraping(watauga_parcel_ids)
+#    
+#except Exception:
+#    
+#    print(Exception)
+#    time.sleep(3)
+#    cf.watauga_tax_scraping(parcel_ids)
     
-except Exception:
+
+
+
+#####FOR AVERY COUNTY#####Example
+#cant use the data yet, Avery county condo parcels are messed up. Manually got data for a good parcel number
+
+#Land on Avery county tax website
+driver.get('http://webtax.averycountync.gov/')
+
+parcel_numbers = ['18570005766100001', '18570015196400003']	
+#parcel_numbers = ['18570005766100001']
+
+for parcel_number in parcel_numbers:
     
-    print(Exception)
-    time.sleep(3)
-    cf.watauga_tax_scraping(parcel_ids)
+    parcel_number_split = []
     
+    p1 = parcel_number[0:4]
+    parcel_number_split.append(p1)
+    p2 = parcel_number[4:6]
+    parcel_number_split.append(p2)
+    p3 = parcel_number[6:8]
+    parcel_number_split.append(p3)
+    p4 = parcel_number[8:12]
+    parcel_number_split.append(p4)
+    p5 = parcel_number[12:19]
+    parcel_number_split.append(p5)
+    
+    #Clear input fields
+    map_ = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtMAP')
+    map_.clear()
+    sub = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtSUB')
+    sub.clear()
+    blk = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtBLK')
+    blk.clear()
+    lot = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtLOT')
+    lot.clear()
+    ext = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtEXT')
+    ext.clear()    
+    
+    #Enter Parcel # into input boxes (Map, Sub, Blk, Lot, Ext)
+    map_.send_keys(parcel_number_split[0])
+    sub.send_keys(parcel_number_split[1])
+    blk.send_keys(parcel_number_split[2])
+    lot.send_keys(parcel_number_split[3])
+    ext.send_keys(parcel_number_split[4])
+    
+    #Click buttons to get results
+    driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_buttonSearch').click()
+    
+    driver.find_element_by_class_name('HyperLinkField').click()
+    
+    driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
+    
+    #Now scrape HTML results using BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    
+    body_tags = soup.find_all('td', valign='bottom')
+    
+    #output is printed in long table. Using indexing to find the address info
+    ####START HERE. I will probably have to use regular expressions to find this address in the output text
+    body_tags = body_tags[191:194]    
+    body_tags = [tag.text for tag in body_tags]    #get just the text of each tag
+    
+    mailing_address = ' '.join(body_tags)
+    
+    print(mailing_address)
+    
+    time.sleep(5)
 
 
 
-##Enter parcel ID values into input boxes
-#driver.find_element_by_name('inpParid').send_keys('2911911616001')
-#driver.find_element_by_name('btSearch').click()
-#
-#results = driver.find_element_by_class_name('SearchResults')                      #There will only be 1 result when searching by Parcel ID
-#results.click()
-#
-##Now look through results on Parcel ID landing page using Beautiful Soup. This prints all elements on the page
-#soup = BeautifulSoup(driver.page_source, 'html.parser')
-#
-#labels = soup.find_all('td', class_='DataletSideHeading')
-#
-#values = soup.find_all('td', class_='DataletData')
-#
-#mailing_address = [values[26].text, values[28].text]      #26th and 28th item in results are street address
-#mailing_address = ' '.join(mailing_address)                #concatenate these into one mailing address string
-
-
-
-#####FOR AVERY COUNTY#####
-#cant do this yet, Avery county condo parcels are messed up
 
 
 
