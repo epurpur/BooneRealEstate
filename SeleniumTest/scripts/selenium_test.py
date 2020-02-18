@@ -5,6 +5,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
+import re
 
 import CountyFunctions as cf
 
@@ -39,6 +40,7 @@ driver.get('http://webtax.averycountync.gov/')
 
 parcel_numbers = ['18570005766100001', '18570015196400003']	
 #parcel_numbers = ['18570005766100001']
+
 
 for parcel_number in parcel_numbers:
     
@@ -81,21 +83,32 @@ for parcel_number in parcel_numbers:
     
     driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
     
+    ####START HERE
     #Now scrape HTML results using BeautifulSoup
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    
-    body_tags = soup.find_all('td', valign='bottom')
-    
-    #output is printed in long table. Using indexing to find the address info
-    ####START HERE. I will probably have to use regular expressions to find this address in the output text
-    body_tags = body_tags[191:194]    
-    body_tags = [tag.text for tag in body_tags]    #get just the text of each tag
-    
-    mailing_address = ' '.join(body_tags)
-    
-    print(mailing_address)
-    
-    time.sleep(5)
+#    scraped_text = []
+#    
+#    soup = BeautifulSoup(driver.page_source, 'html.parser')
+#    
+#    body_tags = soup.find_all('td', valign='bottom')
+#    
+#    for tag in body_tags:
+#        scraped_text.append(tag.text)
+#        
+#    scraped_text = "!".join(scraped_text)
+#    
+#    pattern_text = []
+#
+#    pattern = re.compile(r'\d+ \w+ \w+!.+![A-Z][A-Z]!\d{5}-')
+#    
+#    matches = pattern.findall(scraped_text)
+#    
+#    for match in matches:
+#        match = match.replace("!", " ")    #removes '!' character from string
+#        match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+#    
+#    print(pattern_text)
+#    
+#    time.sleep(5)
 
 
 
@@ -105,11 +118,9 @@ for parcel_number in parcel_numbers:
 #####FOR CALDWELL COUNTY##### WORK IN PROGRESS
 #Land on Caldwell County GIS Page
 #driver.get('http://gis.caldwellcountync.org/maps/default.htm')
+#
+#test = driver.find_element_by_xpath('//*[@id="toolMenu"]/table/tr/td[1]')
 
-#Hover over 'enter serach string' and select 'Parcel ID'
-#elements_to_hover_over = driver.find_elements_by_class_name('dijitTabInner dijitTabContent dijitTab dijitTabChecked dijitChecked dijitTabFocused dijitTabCheckedFocused dijitCheckedFocused dijitFocused')
-#hover = ActionChains(driver).move_to_element(element_to_hover_over)
-#hover.perform()
 
 
 
