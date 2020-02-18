@@ -38,9 +38,11 @@ driver = webdriver.Chrome(executable_path="/Users/ep9k/Desktop/SeleniumTest/driv
 #Land on Avery county tax website
 driver.get('http://webtax.averycountync.gov/')
 
-parcel_numbers = ['18570005766100001', '18570015196400003']	
-#parcel_numbers = ['18570005766100001']
+#parcel_numbers = ['18570005766100001', '18570015196400003', '18570006101700002', '18571046350100004', '18571047202900002', '18571047202900002',
+#                  '18470095834600003']	
+parcel_numbers = ['18570006500300002', '18570005766100001', '18571046350100004', '18571047304900000', '18571046350100001']
 
+all_addresses = []
 
 for parcel_number in parcel_numbers:
     
@@ -83,33 +85,70 @@ for parcel_number in parcel_numbers:
     
     driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
     
-    ####START HERE
-    #Now scrape HTML results using BeautifulSoup
-#    scraped_text = []
-#    
-#    soup = BeautifulSoup(driver.page_source, 'html.parser')
-#    
-#    body_tags = soup.find_all('td', valign='bottom')
-#    
-#    for tag in body_tags:
-#        scraped_text.append(tag.text)
-#        
-#    scraped_text = "!".join(scraped_text)
-#    
-#    pattern_text = []
-#
-#    pattern = re.compile(r'\d+ \w+ \w+!.+![A-Z][A-Z]!\d{5}-')
-#    
-#    matches = pattern.findall(scraped_text)
-#    
-#    for match in matches:
-#        match = match.replace("!", " ")    #removes '!' character from string
-#        match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
-#    
-#    print(pattern_text)
-#    
-#    time.sleep(5)
+    #Now scrape HTML results using BeautifulSoup and store in scraped_text
+    scraped_text = []
+    
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    
+    body_tags = soup.find_all('td', valign='bottom')
+    
+    for tag in body_tags:
+        scraped_text.append(tag.text)
+        
+    scraped_text = "!".join(scraped_text)
+    
+    #now parse scraped_text and use regular expressions to find address in raw text
+    
+    address_text = []
 
+    pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
+    matches = pattern.findall(scraped_text)
+    
+    print("length = ", len(matches))
+       
+    #first if statement is for the normal pattern of addresses ex: 3957 SUSAN DR GREEN COVE SPRINGS FL 32043
+    if len(matches) != 0:
+        print("if loop")
+        for match in matches:
+            match = match.replace("!", " ")    #removes '!' character from string
+            match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+        
+            address_text.append(match)
+            
+    #first elif statement is for address pattern with weird stuff on end ex: 7705 LAFAYETTE FOREST DR #13 ANNANDELE VA 22003      
+    elif len(matches) == 0:
+        print("1st elif loop")
+        pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+? .?\d+?!.+![A-Z][A-Z]!\d{5}-')
+        matches = pattern.findall(scraped_text)
+        
+        print("length = ", len(matches))
+        
+        if len(matches) != 0:
+        
+            for match in matches:
+                match = match.replace("!", " ")    #removes '!' character from string
+                match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+            
+                address_text.append(match)
+                
+    #second elif statement is for mailing address that is a PO Box ex: P O BOX 369 BANNER ELK NC 28604    
+        elif len(matches) == 0:
+            print("Nested elif loop")
+            pattern = re.compile(r'P O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
+            matches = pattern.findall(scraped_text)
+            
+            for match in matches:
+                match = match.replace("!", " ")    #removes '!' character from string
+                match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+
+                address_text.append(match)
+
+    
+    all_addresses.append(address_text)
+    
+    time.sleep(2)    #sleep so that we don't bombard the server
+    
+print(all_addresses)
 
 
 
