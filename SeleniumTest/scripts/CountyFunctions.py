@@ -145,20 +145,18 @@ def avery_tax_scraping(parcel_numbers):
         
         #now parse scraped_text and use regular expressions to find address in raw text
         
-        address_text = []
-    
+ 
+    #first if statement is for the normal pattern of addresses ex: 3957 SUSAN DR GREEN COVE SPRINGS FL 32043
         pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
         matches = pattern.findall(scraped_text)
-        
-           
-        #first if statement is for the normal pattern of addresses ex: 3957 SUSAN DR GREEN COVE SPRINGS FL 32043
+                   
         if len(matches) != 0:
 
             for match in matches:
                 match = match.replace("!", " ")    #removes '!' character from string
                 match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
             
-                address_text.append(match)
+                all_addresses.append(match)
                 
         #first elif statement is for address pattern with weird stuff on end ex: 7705 LAFAYETTE FOREST DR #13 ANNANDELE VA 22003      
         elif len(matches) == 0:
@@ -172,7 +170,7 @@ def avery_tax_scraping(parcel_numbers):
                     match = match.replace("!", " ")    #removes '!' character from string
                     match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
                 
-                    address_text.append(match)
+                    all_addresses.append(match)
                     
         #second elif statement is for mailing address that is a PO Box ex: P O BOX 369 BANNER ELK NC 28604    
             elif len(matches) == 0:
@@ -183,11 +181,9 @@ def avery_tax_scraping(parcel_numbers):
                     match = match.replace("!", " ")    #removes '!' character from string
                     match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
     
-                    address_text.append(match)
+                    all_addresses.append(match)
     
-        
-        all_addresses.append(address_text)
-        
+                
         time.sleep(2)    #sleep so that we don't bombard the server
         
     print(all_addresses)
