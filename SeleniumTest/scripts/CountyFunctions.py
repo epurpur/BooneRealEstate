@@ -67,7 +67,7 @@ def watauga_tax_scraping(parcel_ids):
             
         except Exception:
             
-            print(Exception)
+            all_addresses.append(f"No match for Parcel ID: {id_number}")
             
     print(all_addresses)
 
@@ -92,100 +92,228 @@ def avery_tax_scraping(parcel_numbers):
     #iterate through each parcel number to scrape address from it
     for parcel_number in parcel_numbers:
         
-        parcel_number_split = []
-        
-        p1 = parcel_number[0:4]
-        parcel_number_split.append(p1)
-        p2 = parcel_number[4:6]
-        parcel_number_split.append(p2)
-        p3 = parcel_number[6:8]
-        parcel_number_split.append(p3)
-        p4 = parcel_number[8:12]
-        parcel_number_split.append(p4)
-        p5 = parcel_number[12:19]
-        parcel_number_split.append(p5)
-        
-        #Clear input fields
-        map_ = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtMAP')
-        map_.clear()
-        sub = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtSUB')
-        sub.clear()
-        blk = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtBLK')
-        blk.clear()
-        lot = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtLOT')
-        lot.clear()
-        ext = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtEXT')
-        ext.clear()    
-        
-        #Enter Parcel # into input boxes (Map, Sub, Blk, Lot, Ext)
-        map_.send_keys(parcel_number_split[0])
-        sub.send_keys(parcel_number_split[1])
-        blk.send_keys(parcel_number_split[2])
-        lot.send_keys(parcel_number_split[3])
-        ext.send_keys(parcel_number_split[4])
-        
-        #Click buttons to get results
-        driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_buttonSearch').click()
-        
-        driver.find_element_by_class_name('HyperLinkField').click()
-        
-        driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
-        
-        #Now scrape HTML results using BeautifulSoup and store in scraped_text
-        scraped_text = []
-        
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        
-        body_tags = soup.find_all('td', valign='bottom')
-        
-        for tag in body_tags:
-            scraped_text.append(tag.text)
+        try:
+            parcel_number_split = []
             
-        scraped_text = "!".join(scraped_text)
-        
-        #now parse scraped_text and use regular expressions to find address in raw text
-        
- 
-    #first if statement is for the normal pattern of addresses ex: 3957 SUSAN DR GREEN COVE SPRINGS FL 32043
-        pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
-        matches = pattern.findall(scraped_text)
-                   
-        if len(matches) != 0:
-
-            for match in matches:
-                match = match.replace("!", " ")    #removes '!' character from string
-                match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+            p1 = parcel_number[0:4]
+            parcel_number_split.append(p1)
+            p2 = parcel_number[4:6]
+            parcel_number_split.append(p2)
+            p3 = parcel_number[6:8]
+            parcel_number_split.append(p3)
+            p4 = parcel_number[8:12]
+            parcel_number_split.append(p4)
+            p5 = parcel_number[12:19]
+            parcel_number_split.append(p5)
             
-                all_addresses.append(match)
+            #Clear input fields
+            map_ = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtMAP')
+            map_.clear()
+            sub = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtSUB')
+            sub.clear()
+            blk = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtBLK')
+            blk.clear()
+            lot = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtLOT')
+            lot.clear()
+            ext = driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_ctrlParcelNumber_txtEXT')
+            ext.clear()    
+            
+            #Enter Parcel # into input boxes (Map, Sub, Blk, Lot, Ext)
+            map_.send_keys(parcel_number_split[0])
+            sub.send_keys(parcel_number_split[1])
+            blk.send_keys(parcel_number_split[2])
+            lot.send_keys(parcel_number_split[3])
+            ext.send_keys(parcel_number_split[4])
+            
+            #Click buttons to get results
+            driver.find_element_by_id('ctl00_contentplaceholderRealEstateSearch_usercontrolRealEstateSearch_buttonSearch').click()
+            
+            driver.find_element_by_class_name('HyperLinkField').click()
+            
+            driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
+            
+            #Now scrape HTML results using BeautifulSoup and store in scraped_text
+            scraped_text = []
+            
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            
+            body_tags = soup.find_all('td', valign='bottom')
+            
+            for tag in body_tags:
+                scraped_text.append(tag.text)
                 
-        #first elif statement is for address pattern with weird stuff on end ex: 7705 LAFAYETTE FOREST DR #13 ANNANDELE VA 22003      
-        elif len(matches) == 0:
-            pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+? .?\d+?!.+![A-Z][A-Z]!\d{5}-')
+            scraped_text = "!".join(scraped_text)
+            
+            #now parse scraped_text and use regular expressions to find address in raw text
+            
+     
+        #first if statement is for the normal pattern of addresses ex: 3957 SUSAN DR GREEN COVE SPRINGS FL 32043
+            pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
             matches = pattern.findall(scraped_text)
-            
-            
+                       
             if len(matches) != 0:
-            
+    
                 for match in matches:
                     match = match.replace("!", " ")    #removes '!' character from string
                     match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
                 
                     all_addresses.append(match)
                     
-        #second elif statement is for mailing address that is a PO Box ex: P O BOX 369 BANNER ELK NC 28604    
+            #first elif statement is for address pattern with weird stuff on end ex: 7705 LAFAYETTE FOREST DR #13 ANNANDELE VA 22003      
             elif len(matches) == 0:
-                pattern = re.compile(r'P O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
+                pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+? .?\d+?!.+![A-Z][A-Z]!\d{5}-')
                 matches = pattern.findall(scraped_text)
                 
-                for match in matches:
-                    match = match.replace("!", " ")    #removes '!' character from string
-                    match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
-    
-                    all_addresses.append(match)
-    
                 
-        time.sleep(2)    #sleep so that we don't bombard the server
+                if len(matches) != 0:
+                
+                    for match in matches:
+                        match = match.replace("!", " ")    #removes '!' character from string
+                        match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+                    
+                        all_addresses.append(match)
+                        
+            #second elif statement is for mailing address that is a PO Box ex: P O BOX 369 BANNER ELK NC 28604    
+                elif len(matches) == 0:
+                    pattern = re.compile(r'P O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
+                    matches = pattern.findall(scraped_text)
+                    
+                    if len(matches) != 0:
+                    
+                        for match in matches:
+                            match = match.replace("!", " ")    #removes '!' character from string
+                            match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+            
+                            all_addresses.append(match)
+                            
+                    else: 
+                        all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+    
+                    
+            time.sleep(2)    #sleep so that we don't bombard the server
+        
+        except Exception:
+            all_addresses.append(f"No match for Parcel ID: {parcel_number}")
         
     print(all_addresses)
     
 
+
+def caldwell_tax_scraping(parcel_numbers):
+    """Goes to Caldwell County Tax page: http://tax.caldwellcountync.org/RealEstate.aspx
+    and scrapes tax information about Caldwell County condo parcels
+    
+    Scraping is similar to Avery County. Selenium is used to click through buttons and enter text.
+    Text is presented in one big blob which I then have to parse through and use regular expressions
+    to identify pattern of address."""
+    
+    driver = webdriver.Chrome(executable_path="/Users/ep9k/Desktop/SeleniumTest/drivers/chromedriver")
+
+    #Land on Caldwell County GIS Page
+    driver.get('http://tax.caldwellcountync.org/RealEstate.aspx')
+    
+    #parcel_numbers = ['2817.03 13 9685', '2817.03 13 9683', '2817.03 13 9507', '2817.03 13 8622']
+    parcel_numbers = ['2817.03 33 0099', '2817.03 13 8559', 'cdgds']
+    
+    #holds final address list
+    all_addresses = []
+    
+    for parcel_number in parcel_numbers:
+    
+        try:
+            #enter parcel information into "PIN" box. Clear box first
+            pin_entry_field = driver.find_element_by_name('ctl00$contentplaceholderRealEstateSearch$usercontrolRealEstateSearch$ctrlAlternateIdentifier$txtPIN')
+            pin_entry_field.clear()
+            
+            pin_entry_field.send_keys(parcel_number)
+            
+            #click "search" button
+            driver.find_element_by_name('ctl00$contentplaceholderRealEstateSearch$usercontrolRealEstateSearch$buttonSearch').click()
+            #click 'Parcel #' Hyperlink button
+            driver.find_element_by_class_name('HyperLinkField').click()
+            #click on 'Owners' tab
+            driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
+            
+            #Now scrape HTML results using BeautifulSoup and store in scraped_text
+            scraped_text = []
+            
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    
+            body_tags = soup.find_all('td', valign='bottom')
+                    
+            for tag in body_tags:
+                scraped_text.append(tag.text)
+            
+            scraped_text = "!".join(scraped_text)
+            
+            #now parse scraped_text and use regular expressions to find address in raw text
+            
+            #first pattern is for weird mailing address ex: 4765 ASTON GARDENS WAY BLDG 4 UNIT 311
+            #I had to include this first because the above address example is an outlier which does
+            #return a match with normal regex expression, but it is an incorrect address
+            pattern = re.compile(r'\d+ \w+ \w+ \w+ \d+ \w+ \d+!\w+![A-Z][A-Z]!\d{5}-')
+            
+            matches = pattern.findall(scraped_text)
+            
+            if len(matches) != 0:
+                address_text = []
+                
+                for match in matches:
+                    
+                    match = match.replace("!", " ")    #removes '!' character from string
+                    match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+                    
+                    address_text.append(match)
+                
+                #I just want one address returned
+                if len(address_text) > 1:
+                    all_addresses.append(address_text[0])
+                else:
+                    all_addresses.append(address_text)
+        
+            #first elif statement is for normal address pattern            
+            elif len(matches) == 0:
+                pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
+                matches = pattern.findall(scraped_text)
+                
+                if len(matches) != 0:
+                
+                    for match in matches:
+                        match = match.replace("!", " ")    #removes '!' character from string
+                        match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+            
+                        all_addresses.append(match)
+            
+            #second elif statement is for mailing address that is a PO Box ex: PO BOX 369 BANNER ELK NC 28604    
+                elif len(matches) == 0:
+                    
+                    pattern = re.compile(r'P ?O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
+                    matches = pattern.findall(scraped_text)
+                    
+                    if len(matches) != 0:
+                    
+                        for match in matches:
+                            match = match.replace("!", " ")    #removes '!' character from string
+                            match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+                
+                            all_addresses.append(match)
+                        
+                #If none of these methods work, record this in place of an address
+                    else:
+                        all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+        
+                    
+            time.sleep(2)     #sleep so that we don't bombard the server
+        
+        
+        except Exception:
+            
+            all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+        
+    print(all_addresses)
+    
+    
+    
+    
+    
+    
