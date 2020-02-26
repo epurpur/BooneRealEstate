@@ -30,7 +30,7 @@ def watauga_tax_scraping(parcel_ids):
     driver.get('http://tax.watgov.org/WataugaNC/search/commonsearch.aspx?mode=address')
     driver.find_element_by_name('btAgree').click()                                                  #clicks 'Agree' button to agree to site's terms
     
-    all_addresses = []
+    all_addresses = {}
     
     for id_number in parcel_ids:
         
@@ -61,15 +61,30 @@ def watauga_tax_scraping(parcel_ids):
             mailing_address = [values[26].text, values[28].text]      #26th and 28th item in results are street address
             mailing_address = ' '.join(mailing_address)                #concatenate these into one mailing address string
         
-            all_addresses.append(mailing_address)
+            #add id_number, mailing_address as key:value pairs to all_addresses dictionary
+            all_addresses.update({id_number: mailing_address})
                 
-            time.sleep(5)
+            time.sleep(2)
             
         except Exception:
             
-            all_addresses.append(f"No match for Parcel ID: {id_number}")
+            #add id_number, "no match..." as key:value pairs to all_addresses dict if there is an error
+            all_addresses.update({id_number: "No match for Parcel ID"})
             
-    print(all_addresses)
+    driver.quit()        
+
+            
+    return all_addresses
+
+
+def watauga_map_function(watauga_addresses, watauga_parcel_ids):
+    """Uses map() function to map address to corresponding parcel ID number
+    watauga_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
+    """
+    
+    watauga_parcel_ids['FullMailingAddress'] = watauga_parcel_ids['Parcel ID'].map(watauga_addresses)
+    
+    return watauga_parcel_ids
 
 
 
@@ -87,7 +102,7 @@ def avery_tax_scraping(parcel_numbers):
     driver.get('http://webtax.averycountync.gov/')
 
     #holds final address list
-    all_addresses = []
+    all_addresses = {}
     
     #iterate through each parcel number to scrape address from it
     for parcel_number in parcel_numbers:
@@ -157,7 +172,9 @@ def avery_tax_scraping(parcel_numbers):
                     match = match.replace("!", " ")    #removes '!' character from string
                     match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
                 
-                    all_addresses.append(match)
+#                    all_addresses.append(match)
+                    all_addresses.update({parcel_number: match})
+
                     
             #first elif statement is for address pattern with weird stuff on end ex: 7705 LAFAYETTE FOREST DR #13 ANNANDELE VA 22003      
             elif len(matches) == 0:
@@ -171,7 +188,7 @@ def avery_tax_scraping(parcel_numbers):
                         match = match.replace("!", " ")    #removes '!' character from string
                         match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
                     
-                        all_addresses.append(match)
+                        all_addresses.update({parcel_number: match})
                         
             #second elif statement is for mailing address that is a PO Box ex: P O BOX 369 BANNER ELK NC 28604    
                 elif len(matches) == 0:
@@ -184,7 +201,7 @@ def avery_tax_scraping(parcel_numbers):
                             match = match.replace("!", " ")    #removes '!' character from string
                             match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
             
-                            all_addresses.append(match)
+                            all_addresses.update({parcel_number: match})
                             
                     else: 
                         all_addresses.append(f"No match for Parcel ID: {parcel_number}")
@@ -193,10 +210,24 @@ def avery_tax_scraping(parcel_numbers):
             time.sleep(2)    #sleep so that we don't bombard the server
         
         except Exception:
-            all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+            all_addresses.update({parcel_number: "No match for Parcel ID"})
         
-    print(all_addresses)
+    driver.quit()   
+
+        
+    return all_addresses
     
+
+
+def avery_map_function(avery_addresses, avery_parcel_ids):
+    """Uses map() function to map address to corresponding parcel ID number
+    avery_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
+    """
+    
+    avery_parcel_ids['FullMailingAddress'] = avery_parcel_ids['Updated Parcel ID'].map(avery_addresses)
+    
+    return avery_parcel_ids
+
 
 
 def caldwell_tax_scraping(parcel_numbers):
@@ -212,11 +243,9 @@ def caldwell_tax_scraping(parcel_numbers):
     #Land on Caldwell County GIS Page
     driver.get('http://tax.caldwellcountync.org/RealEstate.aspx')
     
-    #parcel_numbers = ['2817.03 13 9685', '2817.03 13 9683', '2817.03 13 9507', '2817.03 13 8622']
-    parcel_numbers = ['2817.03 33 0099', '2817.03 13 8559', 'cdgds']
     
     #holds final address list
-    all_addresses = []
+    all_addresses = {}
     
     for parcel_number in parcel_numbers:
     
@@ -259,7 +288,6 @@ def caldwell_tax_scraping(parcel_numbers):
                 address_text = []
                 
                 for match in matches:
-                    
                     match = match.replace("!", " ")    #removes '!' character from string
                     match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
                     
@@ -267,9 +295,9 @@ def caldwell_tax_scraping(parcel_numbers):
                 
                 #I just want one address returned
                 if len(address_text) > 1:
-                    all_addresses.append(address_text[0])
+                    all_addresses.update({parcel_number: address_text[0]})
                 else:
-                    all_addresses.append(address_text)
+                    all_addresses.update({parcel_number: address_text})
         
             #first elif statement is for normal address pattern            
             elif len(matches) == 0:
@@ -282,11 +310,10 @@ def caldwell_tax_scraping(parcel_numbers):
                         match = match.replace("!", " ")    #removes '!' character from string
                         match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
             
-                        all_addresses.append(match)
+                        all_addresses.update({parcel_number: match})
             
             #second elif statement is for mailing address that is a PO Box ex: PO BOX 369 BANNER ELK NC 28604    
-                elif len(matches) == 0:
-                    
+                elif len(matches) == 0:                    
                     pattern = re.compile(r'P ?O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
                     matches = pattern.findall(scraped_text)
                     
@@ -295,12 +322,13 @@ def caldwell_tax_scraping(parcel_numbers):
                         for match in matches:
                             match = match.replace("!", " ")    #removes '!' character from string
                             match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
+                            match = re.sub(f'.*P', 'P', match) #removes anything before 'P' character. I was getting weird extra stuff in some results
                 
-                            all_addresses.append(match)
+                            all_addresses.update({parcel_number: match})
                         
                 #If none of these methods work, record this in place of an address
                     else:
-                        all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+                        all_addresses.update({parcel_number: "No match for Parcel ID"})
         
                     
             time.sleep(2)     #sleep so that we don't bombard the server
@@ -308,12 +336,26 @@ def caldwell_tax_scraping(parcel_numbers):
         
         except Exception:
             
-            all_addresses.append(f"No match for Parcel ID: {parcel_number}")
+            all_addresses.update({parcel_number: "No match for Parcel ID"})
+            
+    #Do this to update random long values
+    for parcel_id, address in all_addresses.items():
+        if len(address) > 50:
+            all_addresses[parcel_id] = "No match for Parcel ID"
+            
+    driver.quit()        
         
-    print(all_addresses)
+    return all_addresses
     
     
+def caldwell_map_function(caldwell_addresses, caldwell_parcel_ids):
+    """Uses map() function to map address to corresponding parcel ID number
+    caldwell_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
+    """
     
+    caldwell_parcel_ids['FullMailingAddress'] = caldwell_parcel_ids['Updated Parcel ID'].map(caldwell_addresses)
+    
+    return caldwell_parcel_ids
     
     
     

@@ -1,58 +1,53 @@
 
 
-from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from bs4 import BeautifulSoup
-import time
 import pandas as pd
-import re
 
 import CountyFunctions as cf
 
-driver = webdriver.Chrome(executable_path="/Users/ep9k/Desktop/SeleniumTest/drivers/chromedriver")
 
-
-#####FOR WATAUGA COUNTY#####EXAMPLE
-
-#watauga_parcel_ids = ['1878-25-3746-006', '1878-36-3971-001', '1878-36-3971-022', '1889-31-8223-000', '1889-40-8346-000']
-#
-###Reading parcel IDs from the matt_condo_list file.  COME BACK TO THIS
-##matt_condo_list = pd.read_csv('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.csv')
-##
-##watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']
-##watauga_parcel_ids = watauga_parcel_ids['Parcel ID'].tolist()
-##watauga_parcel_ids = watauga_parcel_ids[:5]    #taking just first 10 as test
-#
-#try:
-#    cf.watauga_tax_scraping(watauga_parcel_ids)
-#    
-#except Exception:
-#    
-#    print(Exception)
-#    time.sleep(3)
-#    cf.watauga_tax_scraping(watauga_parcel_ids)
-    
+#Reading parcel IDs from the matt_condo_list file.  COME BACK TO THIS
+matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.xlsx')
 
 
 
-######FOR AVERY COUNTY#####Example
-#cant use the data yet, Avery county condo parcels are messed up. Manually got data for a good parcel number
+#####FOR WATAUGA COUNTY#####
 
-#parcel_numbers = ['18570005766100001', '18570015196400003', '18570006101700002', '18571046350100004', '18571047202900002', '18571047202900002',
-#                  '18470095834600003']	
-#avery_parcel_numbers = ['185700065003', '18570005766100001', ' csfdj;', '18571046350100004', '18571047304900000', '18571046350100001']
-#
-#cf.avery_tax_scraping(avery_parcel_numbers)
+watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']            #2382 condos in Watauga County
+watauga_parcel_ids = watauga_parcel_ids.head(50)                                            #take first 5 just as a test
+
+watauga_parcel_sample = watauga_parcel_ids['Updated Parcel ID'].tolist()
+
+watauga_addresses = cf.watauga_tax_scraping(watauga_parcel_sample)
+watauga_final = cf.watauga_map_function(watauga_addresses, watauga_parcel_ids)
 
 
+########FOR AVERY COUNTY#####
 
+avery_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Avery']            #709 condos in Avery County
+avery_parcel_ids = avery_parcel_ids.head(50)                                     #take first 5 as test
+
+avery_parcel_sample = avery_parcel_ids['Updated Parcel ID'].tolist()
+avery_parcel_sample = [str(i) for i in avery_parcel_sample]     #convert list items to string
+avery_parcel_sample = [i.replace(" ","") for i in avery_parcel_sample]     #remove spaces from strings
+
+
+avery_addresses = cf.avery_tax_scraping(avery_parcel_sample)
+avery_final = cf.avery_map_function(avery_addresses, avery_parcel_ids)
 
 
 
 ####FOR CALDWELL COUNTY##### Example
 
-#parcel_numbers = ['2817.03 13 9685', '2817.03 13 9683', '2817.03 13 9507', '2817.03 13 8622']
-parcel_numbers = ['2817.03 33 0099', '2817.03 13 8559', 'cdgds']
+caldwell_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Caldwell']
 
-cf.caldwell_tax_scraping(parcel_numbers)
+caldwell_parcel_sample = caldwell_parcel_ids['Updated Parcel ID'].tolist()
 
+caldwell_addresses = cf.caldwell_tax_scraping(caldwell_parcel_sample)
+caldwell_final = cf.caldwell_map_function(caldwell_addresses, caldwell_parcel_ids)
+
+
+#Lastly, add dataframes together
+condos_final = pd.concat([watauga_final, avery_final, caldwell_final], ignore_index=True)
+
+#Lastly, fill erroneous NaN values in FullMailingAddress column
+condos_final = condos_final['FullMailingAddress'].fillna('No match for Parcel ID', inplace=True)
