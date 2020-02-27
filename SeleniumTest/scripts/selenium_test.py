@@ -13,7 +13,7 @@ matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddre
 #####FOR WATAUGA COUNTY#####
 
 watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']            #2382 condos in Watauga County
-watauga_parcel_ids = watauga_parcel_ids.head(50)                                            #take first 5 just as a test
+#watauga_parcel_ids = watauga_parcel_ids.head(50)                                            #take first 5 just as a test
 
 watauga_parcel_sample = watauga_parcel_ids['Updated Parcel ID'].tolist()
 
@@ -24,7 +24,7 @@ watauga_final = cf.watauga_map_function(watauga_addresses, watauga_parcel_ids)
 ########FOR AVERY COUNTY#####
 
 avery_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Avery']            #709 condos in Avery County
-avery_parcel_ids = avery_parcel_ids.head(50)                                     #take first 5 as test
+#avery_parcel_ids = avery_parcel_ids.head(50)                                     #take first 5 as test
 
 avery_parcel_sample = avery_parcel_ids['Updated Parcel ID'].tolist()
 avery_parcel_sample = [str(i) for i in avery_parcel_sample]     #convert list items to string
