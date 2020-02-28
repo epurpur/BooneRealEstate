@@ -15,7 +15,7 @@ import re
 
 
 
-def watauga_tax_scraping(parcel_ids):
+def watauga_tax_scraping(parcel_numbers):
     """Goes to Watauga County Tax Page: http://tax.watgov.org/WataugaNC/search/commonsearch.aspx?mode=address
     and scrapes tax information about Watauga County condo parcels.
     
@@ -31,8 +31,11 @@ def watauga_tax_scraping(parcel_ids):
     driver.find_element_by_name('btAgree').click()                                                  #clicks 'Agree' button to agree to site's terms
     
     all_addresses = {}
+    all_owner_names = {}
     
-    for id_number in parcel_ids:
+    for parcel_number in parcel_numbers:
+        
+        time.sleep(2)
         
         try: 
             #Under 'Property Records' Tab, click on 'Parcel ID' option
@@ -45,7 +48,7 @@ def watauga_tax_scraping(parcel_ids):
             parcel_id_button.click()
             
             #Enter parcel ID values into input boxes
-            driver.find_element_by_name('inpParid').send_keys(id_number)
+            driver.find_element_by_name('inpParid').send_keys(parcel_number)
             driver.find_element_by_name('btSearch').click()
             
             results = driver.find_element_by_class_name('SearchResults')                      #There will only be 1 result when searching by Parcel ID
@@ -54,7 +57,7 @@ def watauga_tax_scraping(parcel_ids):
             #Now look through results on Parcel ID landing page using Beautiful Soup. This prints all elements on the page
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             
-            labels = soup.find_all('td', class_='DataletSideHeading')
+#            labels = soup.find_all('td', class_='DataletSideHeading')
             
             values = soup.find_all('td', class_='DataletData')
 
@@ -62,30 +65,20 @@ def watauga_tax_scraping(parcel_ids):
             mailing_address = [values[26].text, values[28].text]      #26th and 28th item in results are street address
             mailing_address = ' '.join(mailing_address)                #concatenate these into one mailing address string
         
-            #add id_number, mailing_address as key:value pairs to all_addresses dictionary
-            all_addresses.update({id_number: mailing_address})
-                
-            time.sleep(2)
+            #add parcel_number, mailing_address as key:value pairs to all_addresses dictionary
+            #add parcel_number, owner name as key:value pairs to all_owner_names dictionary
+            all_addresses.update({parcel_number: mailing_address})
+            all_owner_names.update({parcel_number: owner_name})
             
         except Exception:
             
             #add id_number, "no match..." as key:value pairs to all_addresses dict if there is an error
-            all_addresses.update({id_number: "No match for Parcel ID"})
+            all_addresses.update({parcel_number: "No match for Parcel ID"})
+            all_owner_names.update({parcel_number: "No match for Parcel ID"})
             
     driver.quit()        
-
             
-    return all_addresses
-
-
-def watauga_map_function(watauga_addresses, watauga_parcel_ids):
-    """Uses map() function to map address to corresponding parcel ID number
-    watauga_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
-    """
-    
-    watauga_parcel_ids['FullMailingAddress'] = watauga_parcel_ids['Parcel ID'].map(watauga_addresses)
-    
-    return watauga_parcel_ids
+    return all_addresses, all_owner_names
 
 
 
@@ -109,7 +102,9 @@ def avery_tax_scraping(parcel_numbers):
     
     #iterate through each parcel number to scrape address from it
     for parcel_number in parcel_numbers:
-        
+       
+        time.sleep(2)
+    
         try:
             parcel_number_split = []
             
@@ -154,9 +149,7 @@ def avery_tax_scraping(parcel_numbers):
             
             driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
             
-            #Now scrape HTML results using BeautifulSoup and store in scraped_text
-            scraped_text = []
-            
+            #Now scrape HTML results using BeautifulSoup           
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
             owner_name1 = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelAccountName1Value'})
@@ -176,22 +169,15 @@ def avery_tax_scraping(parcel_numbers):
             all_addresses.update({parcel_number: full_mailing_address})
             all_owner_names.update({parcel_number: owner_name})
     
+        except Exception:
+            
+            all_addresses.update({parcel_number: "No match for Parcel ID"})
+            all_owner_names.update({parcel_number: "No match for Parcel ID"})
 
-    #####START HERE, REINGINEER THIS FUNCTION TO ACCEPT RETURN MULTIPLE VALUES
-    return all_addresses, all_owner_names
+    driver.quit()
+
+    return all_addresses, all_owner_names     #returns these items in a tuple
     
-
-
-def avery_map_function(avery_addresses, avery_parcel_ids):
-    """Uses map() function to map address to corresponding parcel ID number
-    avery_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
-    """
-    
-    avery_parcel_ids['UpdatedMailingAddress'] = avery_parcel_ids['Updated Parcel ID'].map(avery_addresses)
-    avery_parcel_ids['UpdatedOwnerName'] = avery_parcel_ids['Updated Parcel ID'].map(avery_)
-    
-    return avery_parcel_ids
-
 
 
 def caldwell_tax_scraping(parcel_numbers):
@@ -210,116 +196,71 @@ def caldwell_tax_scraping(parcel_numbers):
     
     #holds final address list
     all_addresses = {}
+    all_owner_names = {}
     
     for parcel_number in parcel_numbers:
     
+        time.sleep(2)
+        
         try:
             #enter parcel information into "PIN" box. Clear box first
             pin_entry_field = driver.find_element_by_name('ctl00$contentplaceholderRealEstateSearch$usercontrolRealEstateSearch$ctrlAlternateIdentifier$txtPIN')
             pin_entry_field.clear()
-            
+                    
             pin_entry_field.send_keys(parcel_number)
-            
+                    
             #click "search" button
             driver.find_element_by_name('ctl00$contentplaceholderRealEstateSearch$usercontrolRealEstateSearch$buttonSearch').click()
             #click 'Parcel #' Hyperlink button
             driver.find_element_by_class_name('HyperLinkField').click()
             #click on 'Owners' tab
             driver.find_element_by_id('__tab_ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners').click()
-            
-            #Now scrape HTML results using BeautifulSoup and store in scraped_text
-            scraped_text = []
-            
+        
+        
+            #scrape HTML
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-                    
-            body_tags = soup.find_all('td', valign='bottom')
-                    
-            for tag in body_tags:
-                scraped_text.append(tag.text)
             
-            scraped_text = "!".join(scraped_text)
+            owner_name1 = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelAccountName1Value'})
+            owner_name2 = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelAccountName2Value'})
+            street_address = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelMailingAddress'})
+            city_name = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelMailingAddressCityValue'})
+            state_name = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelMailingAddressStateValue'})
+            zip_code = soup.find('span', {'id': 'ctl00_contentplaceholderRealEstateWorkplace_tabcontainerWorkSpace_tabpanelOwners_usercontrolRealEstateParcelOwnersData_labelMailingAddressZipCodeValue'})
             
-            #now parse scraped_text and use regular expressions to find address in raw text
-            
-            #first pattern is for weird mailing address ex: 4765 ASTON GARDENS WAY BLDG 4 UNIT 311
-            #I had to include this first because the above address example is an outlier which does
-            #return a match with normal regex expression, but it is an incorrect address
-            pattern = re.compile(r'\d+ \w+ \w+ \w+ \d+ \w+ \d+!\w+![A-Z][A-Z]!\d{5}-')
-            
-            matches = pattern.findall(scraped_text)
-            
-            if len(matches) != 0:
-                address_text = []
-                
-                for match in matches:
-                    match = match.replace("!", " ")    #removes '!' character from string
-                    match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
-                    
-                    address_text.append(match)
-                
-                #I just want one address returned
-                if len(address_text) > 1:
-                    all_addresses.update({parcel_number: address_text[0]})
-                else:
-                    all_addresses.update({parcel_number: address_text})
-        
-            #first elif statement is for normal address pattern            
-            elif len(matches) == 0:
-                pattern = re.compile(r'\d+ \w+ ?\w+? ?\w+?!.+![A-Z][A-Z]!\d{5}-')
-                matches = pattern.findall(scraped_text)
-                
-                if len(matches) != 0:
-                
-                    for match in matches:
-                        match = match.replace("!", " ")    #removes '!' character from string
-                        match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
-            
-                        all_addresses.update({parcel_number: match})
-            
-            #second elif statement is for mailing address that is a PO Box ex: PO BOX 369 BANNER ELK NC 28604    
-                elif len(matches) == 0:                    
-                    pattern = re.compile(r'P ?O BOX \d+!.+![A-Z][A-Z]!\d{5}-')
-                    matches = pattern.findall(scraped_text)
-                    
-                    if len(matches) != 0:
-                    
-                        for match in matches:
-                            match = match.replace("!", " ")    #removes '!' character from string
-                            match = match.split("-", 1)[0]     #splits string on '-' character and takes first part
-                            match = re.sub(f'.*P', 'P', match) #removes anything before 'P' character. I was getting weird extra stuff in some results
-                
-                            all_addresses.update({parcel_number: match})
-                        
-                #If none of these methods work, record this in place of an address
-                    else:
-                        all_addresses.update({parcel_number: "No match for Parcel ID"})
-        
-                    
-            time.sleep(2)     #sleep so that we don't bombard the server
+            #edit elements
+            owner_name = owner_name1.text + " " + owner_name2.text
+            zip_code = zip_code.text
+            zip_code = zip_code.split('-')
+            zip_code = zip_code[0]
+            full_mailing_address = street_address.text + " " + city_name.text + ", " + state_name.text + " " + zip_code
+    
+    
+            all_addresses.update({parcel_number: full_mailing_address})
+            all_owner_names.update({parcel_number: owner_name})
         
         
         except Exception:
             
             all_addresses.update({parcel_number: "No match for Parcel ID"})
-            
-    #Do this to update random long values
-    for parcel_id, address in all_addresses.items():
-        if len(address) > 50:
-            all_addresses[parcel_id] = "No match for Parcel ID"
-            
+            all_owner_names.update({parcel_number: "No match for Parcel ID"})
+                        
     driver.quit()        
         
-    return all_addresses
+    return all_addresses, all_owner_names
     
     
-def caldwell_map_function(caldwell_addresses, caldwell_parcel_ids):
-    """Uses map() function to map address to corresponding parcel ID number
-    caldwell_addresses: dictionary of key:value pairs. Parcel ID is key, Address is value
+    
+def map_function(addresses_dict, owner_names_dict, parcel_ids_df):
+    """Uses map() function to map addresses to corresponding parcel ID
+       Uses map() function to map owner names to corresponding parcel ID number
+       Result is a dataframe with 2 added columns, 'UpdatedMailingAddress' and 'UpdatedOwnerName'
     """
     
-    caldwell_parcel_ids['FullMailingAddress'] = caldwell_parcel_ids['Updated Parcel ID'].map(caldwell_addresses)
+    parcel_ids_df['UpdatedMailingAddress'] = parcel_ids_df['Updated Parcel ID'].map(addresses_dict)
+    parcel_ids_df['UpdatedOwnerName'] = parcel_ids_df['Updated Parcel ID'].map(owner_names_dict)
     
-    return caldwell_parcel_ids
+    return parcel_ids_df
+    
     
     
     
