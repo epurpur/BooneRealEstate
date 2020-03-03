@@ -81,6 +81,14 @@ def watauga_tax_scraping(parcel_numbers):
     return all_addresses, all_owner_names
 
 
+def watauga_subset_df_parcel_sample(watauga_df):
+    """I've had to divide the Watauga County dataframe into pieces of 500 parcels because
+    I keep getting booted by the Watauga County real estate site. This takes the section of the
+    dataframe that I've chosen and returns a list of the Parcel IDs from the 'Updated Parcel ID' column"""
+    
+    return watauga_df['Updated Parcel ID'].tolist()
+
+
 
 def avery_tax_scraping(parcel_numbers):
     """Goes to Avery County Tax page: http://webtax.averycountync.gov/RealEstate.aspx
