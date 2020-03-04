@@ -6,11 +6,11 @@ import CountyFunctions as cf
 
 
 #Reading parcel IDs from the matt_condo_list file.  
-matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.xlsx')
+matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.xlsx', index_col=False)
 
 
 
-#####FOR WATAUGA COUNTY#####
+####FOR WATAUGA COUNTY#####
 
 watauga_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Watauga']            #2382 condos in Watauga County
 
@@ -24,6 +24,7 @@ watauga_df5 = watauga_parcel_ids.iloc[2000:]
 
 watauga_parcel_sample = cf.watauga_subset_df_parcel_sample(watauga_df1)
 
+
 watauga_addresses = cf.watauga_tax_scraping(watauga_parcel_sample)
 watauga_address_dict = watauga_addresses[0]
 watauga_owners_dict = watauga_addresses[1]
@@ -31,8 +32,8 @@ watauga_owners_dict = watauga_addresses[1]
 watauga_final = cf.map_function(watauga_address_dict, watauga_owners_dict, watauga_parcel_ids)
 
 
-#########FOR AVERY COUNTY#####
-#
+########FOR AVERY COUNTY#####
+
 #avery_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Avery']            #709 condos in Avery County
 ##avery_parcel_ids = avery_parcel_ids.head(5)                                     #take first 5 as test
 #
@@ -45,10 +46,10 @@ watauga_final = cf.map_function(watauga_address_dict, watauga_owners_dict, watau
 #avery_address_dict = avery_addresses[0]
 #avery_owners_dict = avery_addresses[1]
 #
-##REMEMBER I NEED TO EXPORT AND KEEP THE 16 SIGNIFICANT DIGITS OF THE PARCEL ID
+##REMEMBER I NEED TO EXPORT TO XLSX BECAUSE THIS PRESERVES ALL 16 SIGNIFICANT DIGITS OF PARCEL ID
 #avery_final = cf.map_function(avery_address_dict, avery_owners_dict, avery_parcel_ids)
-#
-#
+
+
 #####FOR CALDWELL COUNTY#####
 #
 #caldwell_parcel_ids = matt_condo_list.loc[matt_condo_list['County'] == 'Caldwell']       #~40 condos in Caldwell County

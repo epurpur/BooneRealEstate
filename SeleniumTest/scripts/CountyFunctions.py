@@ -33,9 +33,13 @@ def watauga_tax_scraping(parcel_numbers):
     all_addresses = {}
     all_owner_names = {}
     
+    count = 1
+    
     for parcel_number in parcel_numbers:
         
-        time.sleep(2)
+        time.sleep(1)
+        print(count)
+        count += 1
         
         try: 
             #Under 'Property Records' Tab, click on 'Parcel ID' option
@@ -56,14 +60,15 @@ def watauga_tax_scraping(parcel_numbers):
             
             #Now look through results on Parcel ID landing page using Beautiful Soup. This prints all elements on the page
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-            
-#            labels = soup.find_all('td', class_='DataletSideHeading')
-            
+                        
             values = soup.find_all('td', class_='DataletData')
 
             owner_name = values[24].text
             mailing_address = [values[26].text, values[28].text]      #26th and 28th item in results are street address
             mailing_address = ' '.join(mailing_address)                #concatenate these into one mailing address string
+        
+            print(owner_name)
+            print(mailing_address)
         
             #add parcel_number, mailing_address as key:value pairs to all_addresses dictionary
             #add parcel_number, owner name as key:value pairs to all_owner_names dictionary
