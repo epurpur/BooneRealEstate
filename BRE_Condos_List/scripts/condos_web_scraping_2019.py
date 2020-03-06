@@ -6,7 +6,7 @@ import CountyFunctions as cf
 
 
 #1. Reading parcel IDs from the matt_condo_list file.  
-#matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList.xlsx', index_col=False)
+matt_condo_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx', index_col=False)
 
 
 
@@ -84,40 +84,45 @@ import CountyFunctions as cf
 
 #4. READ ALL 5 WATAUGA DFS BACK INTO SCRIP. REMOVE ROWS WITHOUT RESULTS
 ##(These are no data rows, not 'no match for parcel ID')
-#watauga_df_pt1 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df1.xlsx')
-#watauga_df_pt2 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df2.xlsx')
-#watauga_df_pt3 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df3.xlsx')
-#watauga_df_pt4 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df4.xlsx')
-#watauga_df_pt5 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df5.xlsx')
+watauga_df_pt1 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df1.xlsx')
+watauga_df_pt2 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df2.xlsx')
+watauga_df_pt3 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df3.xlsx')
+watauga_df_pt4 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df4.xlsx')
+watauga_df_pt5 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/watauga_df5.xlsx')
 
 #remove rows with null values
-#watauga_df_pt1 = watauga_df_pt1[watauga_df_pt1['UpdatedOwnerName'].notnull()]
-#watauga_df_pt2 = watauga_df_pt2[watauga_df_pt2['UpdatedOwnerName'].notnull()]
-#watauga_df_pt3 = watauga_df_pt3[watauga_df_pt3['UpdatedOwnerName'].notnull()]
-#watauga_df_pt4 = watauga_df_pt4[watauga_df_pt4['UpdatedOwnerName'].notnull()]
-#watauga_df_pt5 = watauga_df_pt5[watauga_df_pt5['UpdatedOwnerName'].notnull()]
+watauga_df_pt1 = watauga_df_pt1[watauga_df_pt1['UpdatedOwnerName'].notnull()]
+watauga_df_pt2 = watauga_df_pt2[watauga_df_pt2['UpdatedOwnerName'].notnull()]
+watauga_df_pt3 = watauga_df_pt3[watauga_df_pt3['UpdatedOwnerName'].notnull()]
+watauga_df_pt4 = watauga_df_pt4[watauga_df_pt4['UpdatedOwnerName'].notnull()]
+watauga_df_pt5 = watauga_df_pt5[watauga_df_pt5['UpdatedOwnerName'].notnull()]
 
 
 
 
 #5. COMBINE ALL FIVE WATAUGA DFS INTO ONE MASTER WATAUGA DF
-#dataframes = [watauga_df_pt1, watauga_df_pt2, watauga_df_pt3, watauga_df_pt4, watauga_df_pt5]
-#watauga_condos = pd.concat(dataframes)
+dataframes = [watauga_df_pt1, watauga_df_pt2, watauga_df_pt3, watauga_df_pt4, watauga_df_pt5]
+watauga_condos = pd.concat(dataframes)
 
 
 
 
-#6. COMBINE ALL 3 COUNTIES TOGETHER TO GET A FINAL 'ALL CONDOS' DATAFRAME
+#6. COMBINE ALL 3 COUNTIES TOGETHER TO GET A FINAL 'ALL CONDOS' DATAFRAME. EXPORT FINAL RESULT
 
 #read Avery and Caldwell results first
-#avery_condos = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/avery_final.xlsx')
-#caldwell_condos = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/caldwell_final.xlsx')
-#
-#dataframes = [watauga_condos, avery_condos, caldwell_condos]
-#all_condos = pd.concat(dataframes)
-#
-##drop unneeded columns
-#all_condos.drop(['Unnamed: 0', 'Parcel ID'], axis=1)
-#
-###export all_condos to desktop
-#all_condos.to_csv(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/caldwell_final.csv')    #for some reason, csv keeps all data and excel loses avery parcel numbers
+avery_condos = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/avery_final.xlsx')
+caldwell_condos = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/County_Parcel_DFs/caldwell_final.xlsx')
+
+dataframes = [watauga_condos, avery_condos, caldwell_condos]
+all_condos = pd.concat(dataframes)
+
+#drop unneeded columns
+all_condos = all_condos.drop(['Unnamed: 0', 'Parcel ID'], axis=1)
+
+
+
+#convert column 'Updated Parcel ID' to 'object' type
+all_condos['Updated Parcel ID'] = all_condos['Updated Parcel ID'].astype(str)
+
+##export all_condos to desktop
+#all_condos.to_excel('/Users/ep9k/Desktop/all_condos.xlsx')
