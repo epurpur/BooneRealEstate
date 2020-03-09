@@ -277,5 +277,64 @@ def map_function(addresses_dict, owner_names_dict, parcel_ids_df):
     return parcel_ids_df
     
     
+
+def condo_buildings_list(condos_list_2019):
+    """reads in the condos address list (MattCondoAddressList2019.xlsx for example). For all rows with 
+    'Property Type' of condo, takes the Parcel ID. Removes last 2 digits of parcel ID and replaces with 0.
+    The condo building will always have the last couple digits as 0. Then returns list of condo building 
+    parcel IDs"""
+    
+    condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
+
+    all_condos = condos_list_2019.loc[condos_list_2019['Property Type'] == 'Condo']
+    
+    all_watauga_condos = all_condos.loc[all_condos['County'] == 'Watauga']
+    watauga_condos_parcel_ids = all_watauga_condos['Updated Parcel ID']
+    
+    all_avery_condos = all_condos.loc[all_condos['County'] == 'Avery']
+    avery_condos_parcel_ids = all_avery_condos['Updated Parcel ID'].tolist()
+    
+    all_caldwell_condos = all_condos.loc[all_condos['County'] == 'Caldwell']
+    caldwell_condos_parcel_ids = all_caldwell_condos['Updated Parcel ID'].tolist()
+    
+    ###FOR AVERY COUNTY
+    avery_list = []
+    
+    for parcel_id in avery_condos_parcel_ids:
+            
+        parcel_id = parcel_id[:12]
+    
+        if parcel_id not in avery_list:
+            avery_list.append(parcel_id)
+                
+    ###FOR WATAUGA COUNTY
+    watauga_list = []
+    
+    for parcel_id in watauga_condos_parcel_ids:
+        
+        parcel_id = parcel_id[:-2]
+        parcel_id = parcel_id + '00'
+        
+        if parcel_id not in watauga_list:
+            watauga_list.append(parcel_id)
+            
+    ###FOR CALDWELL COUNTY
+    caldwell_list = []
+    
+    for parcel_id in caldwell_condos_parcel_ids:
+        parcel_id = parcel_id.replace(' ','')
+        parcel_id = parcel_id.replace('.','')
+        parcel_id = parcel_id[:4] + parcel_id[6:]
+        
+        caldwell_list.append(parcel_id)
+        
+    combined_condo_building_parcel_ids = avery_list + watauga_list + caldwell_list        
+        
+    return combined_condo_building_parcel_ids
+    
+    
+    
+    
+    
     
     
