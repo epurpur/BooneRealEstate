@@ -16,6 +16,17 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 
+#import condo_buildings_list function
+MODULE_PATH = '/Users/ep9k/Desktop/BRE/BRE 2019/BRE_Condos_List/scripts/CountyFunctions.py'
+MODULE_NAME = 'condo_buildings_list'
+import importlib
+import sys
+spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module 
+spec.loader.exec_module(module)
+
+
 
 ##1. Starting from scratch from original documents. This includes...
 ##   -Matt's original mailing list (MattOriginalMailingList.xlsx)
@@ -25,7 +36,7 @@ import numpy as np
 #original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
 #condo_list_2019 = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')               #3,132 condos
 #all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
-##all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
+all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
 #
 #
 ##2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
@@ -118,13 +129,50 @@ all_keepers_2019.loc[all_keepers_2019['parusedesc'] == 'RESIDENTIAL UNDER CONSTR
 
 
 
+##Now Create 'VacantLandValue' column for parcels >$100k and >$200k
+all_keepers_2019.loc[(all_keepers_2019['Property Type'] == 'Vacant Land') & (all_keepers_2019['parval'] > 100000), 'Vacant Land Value'] = '> $100k'
+all_keepers_2019.loc[(all_keepers_2019['Property Type'] == 'Vacant Land') & (all_keepers_2019['parval'] > 200000), 'Vacant Land Value'] = '> $200k'
+
+
+#convert 'saledate' column to datetime
+all_keepers_2019['saledate'] = pd.to_datetime(all_keepers_2019['saledate'])
+all_keepers_2019['Sold In Last Year'] = all_keepers_2019['saledate'].dt.year >= 2018
+all_keepers_2019['Sold In Last Year'] = all_keepers_2019['Sold In Last Year'].replace(True, 'Yes')        
+all_keepers_2019['Sold In Last Year'] = all_keepers_2019['Sold In Last Year'].replace(False, '')
+
+
+#Create the 'owner moved' column by comparing the 2018 Mailing Address to the 2019 Mailing Address
+#First build full Mailing Address column for 2018 data
+all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['MAILING ADDRESS'] + ' ' + all_2018_parcels['MAILING CITY'] + ' ' + all_2018_parcels['MAILING STATE']
+all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_2018'].str.replace(' ','')   #got rid of all spaces for simplicity
+
+#build full mailing address for all_2019_parcels
+all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['mailadd'] + ' ' + all_keepers_2019['mcity'] + ' ' + all_keepers_2019['mstate']
+all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
+
+
+#COME BACK TO OWNER MOVED COLUMN
+###compare 2018 mailing address to 2019 mailing address
+#all_keepers_2019['FullMail2018'] = all_2018_parcels['FullMailAddress_2018']
+##compare 2019 mail address to 2018 mail address to see if there are changes
+#all_keepers_2019['Owner Moved'] = np.where(all_keepers_2019['FullMailingAddress_2019'] != all_keepers_2019['FullMail2018'], 'Yes', 'No')
 
 
 
 
+# 6. Drop Condo Buildings from all_keepers_2019
 
+#first, read in condos list
+condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
 
+#uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
+condo_building_ids = module.condo_buildings_list(condos_list_2019)
 
+#iterate over list (condo_building_ids) and drop matching parcel numbers
+for building_id in condo_building_ids:
+    all_keepers_2019.drop(all_keepers_2019[all_keepers_2019['parno'] == building_id].index, inplace=True)
+
+####START HERE
 
 
 
@@ -212,46 +260,16 @@ all_keepers_2019.loc[all_keepers_2019['parusedesc'] == 'RESIDENTIAL UNDER CONSTR
 #
 #
 ######TODO: CREATE 'owner_moved','sold_in_last_year', 'no_change' columns 
-##convert 'saledate' column to datetime
-#all_2019_parcels['saledate'] = pd.to_datetime(all_2019_parcels['saledate'])
-#all_2019_parcels['Sold In Last Year'] = all_2019_parcels['saledate'].dt.year >= 2018
-#all_2019_parcels['Sold In Last Year'] = all_2019_parcels['Sold In Last Year'].replace(True, 'Yes')        
-#all_2019_parcels['Sold In Last Year'] = all_2019_parcels['Sold In Last Year'].replace(False, '')
-#
-##Create the 'owner moved' column by comparing the 2018 Mailing Address to the 2019 Mailing Address
-##First build full Mailing Address column for 2018 data
-#all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['MAILING ADDRESS'] + ' ' + all_2018_parcels['MAILING CITY'] + ' ' + all_2018_parcels['MAILING STATE']
-#all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_2018'].str.replace(' ','')   #got rid of all spaces for simplicity
-#
-##build full mailing address for all_2019_parcels
-#all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['mailadd'] + ' ' + all_2019_parcels['mcity'] + ' ' + all_2019_parcels['mstate']
-#all_2019_parcels['FullMailingAddress_2019'] = all_2019_parcels['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
-#
-#######COME BACK TO 'OWNER MOVED' COLUMN LATER
-###compare 2018 mailing address to 2019 mailing address
-##all_2019_parcels['FullMail2018'] = all_2018_parcels['FullMailAddress_2018']
-###compare 2019 mail address to 2018 mail address to see if there are changes
-##
-##all_2019_parcels['Owner Moved'] = np.where(all_2019_parcels['FullMailingAddress_2019'] != all_2019_parcels['FullMail2018'], 'Yes', 'No')
 #
 #
 #
-##Now Create 'VacantLandValue' column for parcels >$100k and >$200k
-#all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 100000), 'Vacant Land Value'] = '> $100k'
-#all_2019_parcels.loc[(all_2019_parcels['Property Type'] == 'Vacant Land') & (all_2019_parcels['parval'] > 200000), 'Vacant Land Value'] = '> $200k'
+#
+#
 #
 #
 #
 #
 ##lastly, drop duplicate parcels
 #all_2019_parcels.drop_duplicates(inplace=True)
-#
-#
-##Export output to geopackage to use in PostgreSQL and in QGIS. Only execute at end because this step is slow
-##all_2019_parcels.to_file('/Users/ep9k/Desktop/all_2019_parcels.gpkg', driver='GPKG')
-#
-#
-##Now go into PostgreSQL and run the filters by zones and prices to get final "keepers" list. Could do this in python,
-##and may migrate it all to python later
 
 
