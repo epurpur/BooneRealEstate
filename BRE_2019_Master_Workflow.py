@@ -33,49 +33,48 @@ spec.loader.exec_module(module)
 ##   -Matt's original condo list (MattCondoAddressList2019.xlsx)
 ##   -All parcels (/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg)
 #
-#original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
-#condo_list_2019 = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')               #3,132 condos
-#all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
+original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
+all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
 all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
-#
-#
-##2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
-#columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
-#       'maddstname', 'maddstr', 'maddstsuf', 'maddsttyp', 'mapref', 
-#       'munit', 'ownfrst', 'ownlast', 'owntype', 'parusedsc2', 'revdatetx',
-#       'saddpref', 'scity', 'structno', 'subdivisio', 'subowntype', 'subsurfown', 'sunit',
-#       'szip', 'layer', 'path']
-#
-#all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
-#
-#
-####3. MattOriginalMailing list is not actually his original, but it is a list I had from June 2019 with the 2+ removed, Subdivision, and Excluded Subdivision column in tact. 
-####This had already been joined to the county parcels so I will merge based on the nparno
-#all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='nparno', right_on='nparno')
-#
-###drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
-#
-#columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y',
-# 'id_2', 'id','altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref',
-# 'maddrno','maddstname','maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y',
-# 'parusecode_y','parusedesc_y','parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y',
-# 'saddno_y','saddpref','saddstname_y','saddstr_y','saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y','scity','sourcedate_y','sourcedatx_y',
-# 'sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y','struct_y','structno','structyear_y','subdivisio','subowntype','subsurfown','sunit',
-# 'szip','transfdate_y','id_0','id_1','layer','path']
-#
-#all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
-#
-###the columns in all_2019_parcels get renamed (ex:altparno_x) so I rename them to keep things clean
-#all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyfips','cntyname_x': 'cntyname','gisacres_x': 'gisacres',
-#                                   'improvval_x': 'improvval','landval_x': 'landval','legdecfull_x': 'ledgecfull','multistruc_x': 'multistruc',
-#                                   'ownname2_x': 'ownname2','parno_x': 'parno','parusecd2_x': 'parusecd2','parusecode_x': 'parusecode','parusedesc_x': 'parusedesc',
-#                                   'parval': 'parval','parvaltype_x': 'parvaltype','presentval_x': 'presentval','recareano_x': 'recareano',
-#                                   'recareatx_x': 'recareatx','revisedate_x': 'revisedate','reviseyear_x': 'reviseyear','saddno_x': 'saddno',
-#                                   'saddstname_x': 'saddstname','saddstr_x': 'saddstr','saddstsuf_x': 'saddstsuf','saddsttyp_x': 'saddsttyp',
-#                                   'saledate_x': 'saledate','saledatetx_x': 'saledatetx','sourceagnt_x': 'sourceagnt','sourcedate_x': 'sourcedate',
-#                                   'sourcedatx_x': 'sourcedatx','sourceref_x': 'sourceref','sstate_x': 'sstate','stcntyfips_x': 'stcntyfips','stfips_x': 'stfips',
-#                                   'stname_x': 'stname','struct_x': 'struct','structyear_x': 'structyear','transfdate_x': 'transfdate'},
-#                                    inplace=True)
+
+
+#2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
+columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
+       'maddstname', 'maddstr', 'maddstsuf', 'maddsttyp', 'mapref', 
+       'munit', 'ownfrst', 'ownlast', 'owntype', 'parusedsc2', 'revdatetx',
+       'saddpref', 'scity', 'structno', 'subdivisio', 'subowntype', 'subsurfown', 'sunit',
+       'szip', 'layer', 'path']
+
+all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
+
+
+###3. MattOriginalMailing list is not actually his original, but it is a list I had from June 2019 with the 2+ removed, Subdivision, and Excluded Subdivision column in tact. 
+###This had already been joined to the county parcels so I will merge based on the nparno
+all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='nparno', right_on='nparno')
+
+##drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
+
+columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y',
+ 'id_2', 'id','altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref',
+ 'maddrno','maddstname','maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y',
+ 'parusecode_y','parusedesc_y','parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y',
+ 'saddno_y','saddpref','saddstname_y','saddstr_y','saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y','scity','sourcedate_y','sourcedatx_y',
+ 'sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y','struct_y','structno','structyear_y','subdivisio','subowntype','subsurfown','sunit',
+ 'szip','transfdate_y','id_0','id_1','layer','path']
+
+all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
+
+##the columns in all_2019_parcels get renamed (ex:altparno_x) so I rename them to keep things clean
+all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyfips','cntyname_x': 'cntyname','gisacres_x': 'gisacres',
+                                   'improvval_x': 'improvval','landval_x': 'landval','legdecfull_x': 'ledgecfull','multistruc_x': 'multistruc',
+                                   'ownname2_x': 'ownname2','parno_x': 'parno','parusecd2_x': 'parusecd2','parusecode_x': 'parusecode','parusedesc_x': 'parusedesc',
+                                   'parval': 'parval','parvaltype_x': 'parvaltype','presentval_x': 'presentval','recareano_x': 'recareano',
+                                   'recareatx_x': 'recareatx','revisedate_x': 'revisedate','reviseyear_x': 'reviseyear','saddno_x': 'saddno',
+                                   'saddstname_x': 'saddstname','saddstr_x': 'saddstr','saddstsuf_x': 'saddstsuf','saddsttyp_x': 'saddsttyp',
+                                   'saledate_x': 'saledate','saledatetx_x': 'saledatetx','sourceagnt_x': 'sourceagnt','sourcedate_x': 'sourcedate',
+                                   'sourcedatx_x': 'sourcedatx','sourceref_x': 'sourceref','sstate_x': 'sstate','stcntyfips_x': 'stcntyfips','stfips_x': 'stfips',
+                                   'stname_x': 'stname','struct_x': 'struct','structyear_x': 'structyear','transfdate_x': 'transfdate'},
+                                    inplace=True)
 
 
 
@@ -111,9 +110,6 @@ all_keepers_2019.loc[(all_keepers_2019['landval'] == all_keepers_2019['parval'])
 #Make sure I got all Townhomes in Watauga County in condos list just in case
 all_keepers_2019.loc[(all_keepers_2019['parusedesc'] == 'TOWNHOUSE'), 'Property Type'] = 'Townhome'
 
-#Every condo in Matt's condo list has a subdivision so I can use the 'Condolist Subdivision' column to add condos to Property Type column
-#all_2019_parcels.loc[all_2019_parcels['CondoList Subdivision'].notnull(), 'Property Type'] = 'Condo'    #There are 2214 total condos
-
 #all other parcels will be given the Property Type value of 'Home / Potentially not residential'. This includes a lot of non-residential properties but these will be filtered out later
 all_keepers_2019.loc[all_keepers_2019['Property Type'].isnull(), 'Property Type'] = 'Home / Potentially Not Residential'
 
@@ -126,6 +122,26 @@ all_keepers_2019.loc[all_keepers_2019['parusedesc'] == 'RESIDENTIAL STRUCTURE ON
 all_keepers_2019.loc[all_keepers_2019['parusedesc'] == 'RESIDENTIAL UNDER CONSTRUCTION', 'Property Type'] = 'Home'
 all_keepers_2019.loc[all_keepers_2019['parusedesc'] == 'RESIDENTIAL UNDER CONSTRUCTION/LONG TERM', 'Property Type'] = 'Home'
 
+#These are known undesirable 'parusecode' values (Only Watauga County). I'll compile a list of these and later drop rows with these values
+bad_parusedesc = [ 'AGRICULTURAL-IMPROVED' , 'AGRICULTURAL-VACANT' , 'AMBULANCE SERVICE' , 'AMERICAN LEGION/ETC' , 'AMUSEMENT PARK' , 'APARTMENT - HIGH RISE' , 
+                  'APARTMENT-GARDEN (1-3 STORIES)' , 'ASPHALT PLANT' , 'AUTO DEALERSHIP' , 'AUTO SERVICE GARAGE' , 'AUXILIARY IMPROVEMENT' , 'BANK' , 
+                  'BOARDING/ROOMING HOUSE' , 'BOWLING ALLEY' , 'CAR WASH (AUTOMATIC)' , 'CAR WASH (MANUAL)' , 'CEMENT MFG.' , 'CHARITABLE (ALL OTHER)' , 'CHARITABLE (HOMES)' , 
+                  'CHARITABLE (HOSPITAL)' , 'CLUB HOUSE' , 'COMMERCIAL AUXILIARY IMPROVEMENT' , 'COMMERCIAL LAND VACANT' , 'COMMERCIAL UNDER CONSTRUCTION' , 'COMMUNITY SHOPPING CENTER' , 
+                  'CONCRETE MFG.' , 'CONDOMINIUM (COMMON AREA)' , 'CONVENIENCE STORE' , 'COUNTRY CLUB WITHOUT GOLF COURSE' , 'DAY CARE CENTER' , 'DEPARTMENT STORE' , 
+                  'DISCOUNT DEPARTMENT STORE' , 'DOWNTOWN ROW TYPE' , 'EDUCATION' , 'EDUCATION RELIGIOUS' , 'ELECTRIC UTILITY' , 'EXCLUSIONS (ALL OTHERS)' , 'EXCLUSIONS (COMMONE AREAS)' , 
+                  'EXEMPTIONS (ALL OTHERS)' , 'EXEMPTIONS (CEMETERY)' , 'FAST FOOD' , 'FOOD STAND' , 'FUNERAL HOME' , 'FURNITURE MFG.' , 'GOLF COURSE' , 'GOVERNMENT' , 'HEALTH SPA' , 
+                  'HOTEL HIGH RISE W/O LOUNGE OR RESTAURANT' , 'HOTEL HIGH RISE WITH LOUNGE OR RESTAURANT' , 'HOTEL LOW RISE W/O LOUNGE OR RESTAURANT' , 'INDUSTRIAL TRACT VACANT' , 
+                  'LEATHER PRODUCTS MFG.' , 'LUMBER STORAGE FACILITY' ,  'MANUFACTURING/PROCESSING' , 'MEAT PACKING & SLAUGHTERHOUSE' , 'MEDICAL OFFICE' , 'METAL WORKING' , 'MINI WAREHOUSE' , 
+                  'MISCELLANEOUS AMUSEMENT' ,  'MOTEL LOW RISE WITH LOUNGE OR RESTAURANT' , 'NEWSPAPER PLANT' , 'NON-EX-SCHOOL' , 'NURSING/CONVALESCENT HOME' , 'OFFICE BUILDING LOW RISE (1-4 ST)' , 
+                  'OFFICE CONDOMINIUMS' , 'OFFICE/RETAIL' , 'PAR 3 GOLF COURSE' , 'PARKING (MISCELLANEOUS)' , 'REGIONAL SHOPPING MALL' , 'RELIGIOUS' , 'RESTAURANT' , 
+                  'RETAIL - MULTIPLE OCCUPANCY' , 'RETAIL - SINGLE OCCUPANCY' , 'RETAIL CONDOMINIUM'  'SAVINGS INSTITUTION' , 'SERVICE STATION WITH BAYS' , 'SERVICE STATION WITHOUT BAYS' , 
+                  'SKATING RINK' , 'SOCIAL/FRATERNAL HALL' , 'STONE/MINERAL QUARRY' , 'STRIP SHOPPING CENTER' , 'SUPERMARKET' , 'TELEPHONE UTILITY NEC' , 'TENNIS CLUB INDOOR' , 'TRUCK TERMINAL' , 
+                  'UNSOUND COMM. STRUCTURE' , 'UTILITY VACANT LAND' , 'VETERINARY CLINIC' , 'WAREHOUSE' , 'WAREHOUSE WITH INTERIOR OFFICE SPACE' , 'WAREHOUSE-PREFABRICATED' , 'WATER AMUSEMENT' , 
+                  'WOODWORKING SHOP' ]
+
+#drop rows with these parusedesc from all_keepers_2019. Drops 1719 columns
+for parusedesc in bad_parusedesc:
+    all_keepers_2019.drop(all_keepers_2019[all_keepers_2019['parusedesc'] == parusedesc].index, inplace=True)
 
 
 
@@ -151,7 +167,7 @@ all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['mailadd'] + ' ' 
 all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
 
 
-#COME BACK TO OWNER MOVED COLUMN
+#COME BACK TO THIS. OWNER MOVED COLUMN
 ###compare 2018 mailing address to 2019 mailing address
 #all_keepers_2019['FullMail2018'] = all_2018_parcels['FullMailAddress_2018']
 ##compare 2019 mail address to 2018 mail address to see if there are changes
@@ -169,10 +185,15 @@ condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAdd
 condo_building_ids = module.condo_buildings_list(condos_list_2019)
 
 #iterate over list (condo_building_ids) and drop matching parcel numbers
-for building_id in condo_building_ids:
-    all_keepers_2019.drop(all_keepers_2019[all_keepers_2019['parno'] == building_id].index, inplace=True)
+#for building_id in condo_building_ids:
+#    all_keepers_2019.drop(all_keepers_2019[all_keepers_2019['parno'] == building_id].index, inplace=True)
 
-####START HERE
+#iterate over list (condo_building_ids) and add 'Condo Building' value to Property Type column
+all_keepers_2019.loc[all_keepers_2019['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
+###START HERE
+
+
+
 
 
 
