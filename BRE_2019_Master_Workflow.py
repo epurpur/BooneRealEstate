@@ -205,16 +205,10 @@ all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddre
 
 
 
-## 7. Drop remaining Condo Buildings from all_keepers_2019
-#
-##first, read in condos list
-#condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
-#
-##uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
-#condo_building_ids = module.condo_buildings_list(condos_list_2019)
-#
-##iterate over list (condo_building_ids) and drop matching parcel numbers
-#all_keepers_2019 = all_keepers_2019[~all_keepers_2019['parno'].isin(condo_building_ids)]     #only 11 remaining buildings
+# 7. Drop remaining Condo Buildings from all_keepers_2019
+
+#iterate over list (condo_building_ids) and drop matching parcel numbers
+all_keepers_2019 = all_keepers_2019[all_keepers_2019['Property Type'] != 'Condo Building']     #only 6 remaining buildings
 
 
 
