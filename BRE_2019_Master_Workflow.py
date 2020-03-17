@@ -36,8 +36,11 @@ spec.loader.exec_module(module)
 #original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
 #all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
 all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
-#
-#
+#condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')          #3139 parcels
+
+
+
+
 ##2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
 #columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
 #       'maddstname', 'maddstr', 'maddstsuf', 'maddsttyp', 'mapref', 
@@ -77,26 +80,42 @@ all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')       
 #                                    inplace=True)
 #
 #
+#4. Now, label condo buildings as 'Property Type' = 'Condo Building'
 #
+##first, read in condos list
+#condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
 #
-##4. NOW GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
+##uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
+#condo_building_ids = module.condo_buildings_list(condos_list_2019)
 #
-##export to shapefile
-##all_2019_parcels = gpd.GeoDataFrame(all_2019_parcels, geometry='geometry')
-##move this to PostgreSQL database as new 'all_2019_parcels'
-#
-###FINAL RESULT FROM THIS IS allkeepers_2019
+##iterate over list (condo_building_ids) and add 'Property Type' of 'Condo Building'
+#all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'property type'] = 'Condo Building'
 
 
 
-#5. Create other new columns. Gray out everything above!
+#5. NOW GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
+
+#export to shapefile
+#all_2019_parcels = gpd.GeoDataFrame(all_2019_parcels, geometry='geometry')
+#move this to PostgreSQL database as new 'all_2019_parcels'
+
+##FINAL RESULT FROM THIS IS allkeepers_2019
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#6. Create other new columns. Gray out everything above!
 
 #Start by reading in allkeepers_2019
-all_keepers_2019 = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/all_keepers_2019/all_keepers_2019.shp')
+all_keepers_2019 = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/all_keepers_2019/all_keepers_2019.gpkg')
 
 
 
 # This includes Property type ('Home', 'Vacant Land', 'Condo'). Owner Moved, Sold_In_Last_Year, No_Change, VacantLandValue (>100k and <200k)
+
+#rename 'property t' column (I am not sure why it becomes this after Postgres Filtering)
+all_keepers_2019['Property Type'] = all_keepers_2019['property t']
+#drop 'property t' column
+all_keepers_2019.drop('property t', inplace=True, axis=1)
 
 #Start with Property Type column
 all_keepers_2019.loc[(all_keepers_2019['parusedesc'] == 'RESIDENTIAL VACANT'), 'Property Type'] = 'Vacant Land'
@@ -111,14 +130,15 @@ all_keepers_2019.loc[(all_keepers_2019['landval'] == all_keepers_2019['parval'])
 
 
 
-#drop townhomes. The vast majority of these are already in Matt's Condo list
+
+##drop townhomes. The vast majority of these are already in Matt's Condo list
 all_keepers_2019 = all_keepers_2019[all_keepers_2019['parusedesc'] != 'TOWNHOUSE']
-#Make sure I got all Townhomes in Watauga County in condos list just in case
-#all_keepers_2019.loc[(all_keepers_2019['parusedesc'] == 'TOWNHOUSE'), 'Property Type'] = 'Townhome'
+##Make sure I got all Townhomes in Watauga County in condos list just in case
+##all_keepers_2019.loc[(all_keepers_2019['parusedesc'] == 'TOWNHOUSE'), 'Property Type'] = 'Townhome'
 
 
 
-#all other parcels will be given the Property Type value of 'Home / Potentially not residential'. This includes a lot of non-residential properties but these will be filtered out later
+##all other parcels will be given the Property Type value of 'Home / Potentially not residential'. This includes a lot of non-residential properties but these will be filtered out later
 all_keepers_2019.loc[all_keepers_2019['Property Type'].isnull(), 'Property Type'] = 'Home / Potentially Not Residential'
 
 
@@ -177,29 +197,29 @@ all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddre
 
 
 #COME BACK TO THIS. OWNER MOVED COLUMN
-###compare 2018 mailing address to 2019 mailing address
+##compare 2018 mailing address to 2019 mailing address
 #all_keepers_2019['FullMail2018'] = all_2018_parcels['FullMailAddress_2018']
-##compare 2019 mail address to 2018 mail address to see if there are changes
+#compare 2019 mail address to 2018 mail address to see if there are changes
 #all_keepers_2019['Owner Moved'] = np.where(all_keepers_2019['FullMailingAddress_2019'] != all_keepers_2019['FullMail2018'], 'Yes', 'No')
 
 
 
 
-# 6. Drop remaining Condo Buildings from all_keepers_2019
-
-#first, read in condos list
-condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
-
-#uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
-condo_building_ids = module.condo_buildings_list(condos_list_2019)
-
-#iterate over list (condo_building_ids) and drop matching parcel numbers
-all_keepers_2019 = all_keepers_2019[~all_keepers_2019['parno'].isin(condo_building_ids)]     #only 11 remaining buildings
-
-
+## 7. Drop remaining Condo Buildings from all_keepers_2019
+#
+##first, read in condos list
+#condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')
+#
+##uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
+#condo_building_ids = module.condo_buildings_list(condos_list_2019)
+#
+##iterate over list (condo_building_ids) and drop matching parcel numbers
+#all_keepers_2019 = all_keepers_2019[~all_keepers_2019['parno'].isin(condo_building_ids)]     #only 11 remaining buildings
 
 
-#7. Make list of known bad owner names from 'ownname' column
+
+
+#8. Make list of known bad owner names from 'ownname' column
 #read in bad owner names. This is instead of manually sorting at the end which is haphazard and inconsistent.
 bad_owner_names = ['U S A FOREST SERVICE','UNITED COMMUNITY BANK','UNITED STATES AGRICULTURE','UNITED STATES DEPT OF INTERIOR','UNITED STATES FOREST SERVICE','UNITED STATES OF AMERICA','UNIVERSITY OF MOUNT OLIVE INC','UPPER MOUNTAIN RESEARCH STATION','USA','USA % BLUE RIDGE PARKWAY SUPT','ALLEGHANY COUNTY',
                    'ALLEGHANY COUNTY BOARD OF EDUCATION','ALLEGHANY COUNTY COURTHOUSE','ALLEGHANY MEMORIAL HOSPITAL','ALLEGHANY WELLNESS CENTER INC.','APPALACHIAN CHURCH INC','APPALACHIAN REGIONAL HEALTCARE SYS INC','APPALACHIAN SKI MTN INC','APPALACHIAN STATE UNIVERSITY','APPALACHIAN STATE UNIVERSITY FOUNDATION & ET AL',
@@ -236,7 +256,7 @@ for owner_name in bad_owner_names:
 
 
 
-# 8. Drop duplicates
+# 9. Drop duplicates
 
 #change saledate column to object type from datetime
 all_keepers_2019['saledate'] = all_keepers_2019['saledate'].astype(str)
