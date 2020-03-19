@@ -57,7 +57,7 @@ all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', lef
 #
 ##drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
 
-columns_to_drop = ['MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y','id_2','fid','id',
+columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y','id_2','fid','id',
  'altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref','maddrno','maddstname',
  'maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y','parusecode_y','parusedesc_y',
  'parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y','saddno_y','saddpref','saddstname_y','saddstr_y',
@@ -80,19 +80,21 @@ all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyf
 
 
 
-#3. Label condo buildings as 'Property Type' = 'Condo Building'
-#first, read in condos list
-#uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
-condo_building_ids = module.condo_buildings_list(condos_list_2019)
-
-#iterate over list (condo_building_ids) and add 'Property Type' of 'Condo Building'
-all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
 
 
 
-#4. Create Vacant Land Property Type
 
-#Start with Property Type column
+#3. Create Vacant Land Property Type
+
+#create 'Property Type' column and populate with true/false  alues
+all_2019_parcels['Property Type'] = all_2019_parcels['landval'] == all_2019_parcels['parval']
+
+#change true/false values to 'Vacant Land' or no value. There are 95593 vacant land parcels.
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == True), 'Property Type'] = 'Vacant Land'
+all_2019_parcels.loc[(all_2019_parcels['Property Type'] == False), 'Property Type'] = ''
+
+
+#Label others from Watauga County using parusedesc. Now there are 95783 vacant land parcels (added about 200 parcels)
 all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'RESIDENTIAL VACANT'), 'Property Type'] = 'Vacant Land'
 all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'AGRICULTURAL-VACANT'), 'Property Type'] = 'Vacant Land'
 all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'APARTMENT LAND VACANT'), 'Property Type'] = 'Vacant Land'
@@ -100,32 +102,50 @@ all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'COMMERCIAL LAND VACANT'
 all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'INDUSTRIAL TRACT VACANT'), 'Property Type'] = 'Vacant Land'
 all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'UTILITY VACANT LAND'), 'Property Type'] = 'Vacant Land'
 
-########START HERE
-#if landval = parval, it is vacant land. Meaning there is no structure on it.  There are 17998 vacant land parcels in total 
-all_2019_parcels.loc[(all_2019_parcels['landval'] == all_2019_parcels['parval']), 'Property Type'] == 'Vacant Land'
-
-#make new dataframe with just vacant land parcels
-#vacant_land_df = all_2019_parcels.loc[all_2019_parcels['Property Type'] == 'Vacant Land']
-#
+#make vacant land dataframe
+vacant_land_df = all_2019_parcels[all_2019_parcels['Property Type'] == 'Vacant Land']
 ##drop non-vacant land parcels from all_2019_parcels
-#all_2019_parcels = all_2019_parcels[all_2019_parcels['Property Type'] != 'Vacant Land']
-#
-##vacant land filters: 1-10 acres and >100k. >10acres and >200k. 'gisacres' column
-#filter1 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 1) & (vacant_land_df['gisacres'] < 10) & (vacant_land_df['parval'] > 100000)]
-#filter2 = test2 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 10) & (vacant_land_df['parval'] > 200000)]
-#
-#vacant_land_df = pd.concat([filter1, filter2])
+all_2019_parcels = all_2019_parcels[all_2019_parcels['Property Type'] != 'Vacant Land']
+
+
+#vacant land filters: 1-10 acres and >100k. >10acres and >200k. 'gisacres' column
+filter1 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 1) & (vacant_land_df['gisacres'] < 10) & (vacant_land_df['parval'] > 100000)]
+filter2 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 10) & (vacant_land_df['parval'] > 200000)]
+
+#we are left with 4787 vacant land parcels
+vacant_land_df = pd.concat([filter1, filter2])
 
 
 
+
+#4. Label condo buildings as 'Property Type' = 'Condo Building'
+#first, read in condos list
+#uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
+condo_building_ids = module.condo_buildings_list(condos_list_2019)
+
+#iterate over list (condo_building_ids) and add 'Property Type' of 'Condo Building'
+all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
+
+#remove condo buildings from list
+all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Vacant Land']
+
+
+
+
+####START HERE
 
 #5. GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
+#Also with vacant_land_df, clip parcels to extent of AllZonesExtent
+
 
 #export to shapefile
 #all_2019_parcels = gpd.GeoDataFrame(all_2019_parcels, geometry='geometry')
 #move this to PostgreSQL database as new 'all_2019_parcels'
 
-##FINAL RESULT FROM THIS IS allkeepers_2019
+#vacant_land_df = gpd.GeoDataFrame(vacant_land_df, geometry='geometry')
+
+##FINAL RESULT FROM THIS IS allkeepers_2019 and vacant_land_df
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
