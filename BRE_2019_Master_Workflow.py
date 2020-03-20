@@ -28,148 +28,148 @@ spec.loader.exec_module(module)
 
 
 
-#1. Starting from scratch from original documents. This includes...
-#   -Matt's original mailing list (MattOriginalMailingList.xlsx)
-#   -Matt's original condo list (MattCondoAddressList2019.xlsx)
-#   -All parcels (/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg)
+##1. Starting from scratch from original documents. This includes...
+##   -Matt's original mailing list (MattOriginalMailingList.xlsx)
+##   -Matt's original condo list (MattCondoAddressList2019.xlsx)
+##   -All parcels (/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg)
+##
+#original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
+#all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
+#all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
+#condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')          #3139 parcels
 #
-original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
-all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
-all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
-condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')          #3139 parcels
-
-
-
-#2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
-columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
-       'maddstname', 'maddstr', 'maddstsuf', 'maddsttyp', 'mapref', 
-       'munit', 'ownfrst', 'ownlast', 'owntype', 'parusedsc2', 'revdatetx',
-       'saddpref', 'scity', 'structno', 'subdivisio', 'subowntype', 'subsurfown', 'sunit',
-       'szip', 'layer', 'path']
-
-all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
-
-
-
-#3. MattOriginalMailing list is not actually his original, but it is a list I had from June 2019 with the 2+ removed, Subdivision, and Excluded Subdivision column in tact. 
-##This had already been joined to the county parcels so I will merge based on the nparno
-all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='nparno', right_on='nparno')
 #
-##drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
-
-columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y','id_2','fid','id',
- 'altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref','maddrno','maddstname',
- 'maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y','parusecode_y','parusedesc_y',
- 'parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y','saddno_y','saddpref','saddstname_y','saddstr_y',
- 'saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y','scity','sourcedate_y','sourcedatx_y','sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y',
- 'struct_y','structno','structyear_y','subdivisio','subowntype','subsurfown','sunit','szip','transfdate_y','id_0','id_1','layer','path']
-
-all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
-
-##the columns in all_2019_parcels get renamed (ex:altparno_x) so I rename them to keep things clean
-all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyfips','cntyname_x': 'cntyname','gisacres_x': 'gisacres',
-                                   'improvval_x': 'improvval','landval_x': 'landval','legdecfull_x': 'ledgecfull','multistruc_x': 'multistruc',
-                                   'ownname2_x': 'ownname2','parno_x': 'parno','parusecd2_x': 'parusecd2','parusecode_x': 'parusecode','parusedesc_x': 'parusedesc',
-                                   'parval': 'parval','parvaltype_x': 'parvaltype','presentval_x': 'presentval','recareano_x': 'recareano',
-                                   'recareatx_x': 'recareatx','revisedate_x': 'revisedate','reviseyear_x': 'reviseyear','saddno_x': 'saddno',
-                                   'saddstname_x': 'saddstname','saddstr_x': 'saddstr','saddstsuf_x': 'saddstsuf','saddsttyp_x': 'saddsttyp',
-                                   'saledate_x': 'saledate','saledatetx_x': 'saledatetx','sourceagnt_x': 'sourceagnt','sourcedate_x': 'sourcedate',
-                                   'sourcedatx_x': 'sourcedatx','sourceref_x': 'sourceref','sstate_x': 'sstate','stcntyfips_x': 'stcntyfips','stfips_x': 'stfips',
-                                   'stname_x': 'stname','struct_x': 'struct','structyear_x': 'structyear','transfdate_x': 'transfdate'},
-                                    inplace=True)
-
-
-
-
-
-
-
-#3. Create Vacant Land Property Type
-
-#create 'Property Type' column and populate with true/false  alues
-all_2019_parcels['Property Type'] = all_2019_parcels['landval'] == all_2019_parcels['parval']
-
-#change true/false values to 'Vacant Land' or no value. There are 95593 vacant land parcels.
-all_2019_parcels.loc[(all_2019_parcels['Property Type'] == True), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['Property Type'] == False), 'Property Type'] = ''
-
-
-#Label others from Watauga County using parusedesc. Now there are 95783 vacant land parcels (added about 200 parcels)
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'RESIDENTIAL VACANT'), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'AGRICULTURAL-VACANT'), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'APARTMENT LAND VACANT'), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'COMMERCIAL LAND VACANT'), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'INDUSTRIAL TRACT VACANT'), 'Property Type'] = 'Vacant Land'
-all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'UTILITY VACANT LAND'), 'Property Type'] = 'Vacant Land'
-
-#make vacant land dataframe
-vacant_land_df = all_2019_parcels[all_2019_parcels['Property Type'] == 'Vacant Land']
-##drop non-vacant land parcels from all_2019_parcels
-all_2019_parcels = all_2019_parcels[all_2019_parcels['Property Type'] != 'Vacant Land']
-
-
-#vacant land filters: 1-10 acres and >100k. >10acres and >200k. 'gisacres' column
-filter1 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 1) & (vacant_land_df['gisacres'] < 10) & (vacant_land_df['parval'] > 100000)]
-filter2 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 10) & (vacant_land_df['parval'] > 200000)]
-
-#we are left with 4787 vacant land parcels
-vacant_land_df = pd.concat([filter1, filter2])
-
-
-
-
-#4. Label condo buildings as 'Property Type' = 'Condo Building'
-#first, read in condos list
-#uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
-condo_building_ids = module.condo_buildings_list(condos_list_2019)
-
-#iterate over list (condo_building_ids) and add 'Property Type' of 'Condo Building'
-all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
-
-#remove condo buildings from list
-all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Vacant Land']
-
-
-
-
-####START HERE
-
-#5. GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
-#Also with vacant_land_df, clip parcels to extent of AllZonesExtent
-
-
-#export to shapefile
+#
+##2. Drop useless columns from all_2019_parcels to make data cleaner. Create Address columns to merge with original_mailing_list 
+#columns_to_drop = ['id_0', 'id', 'gnisid', 'maddpref', 'maddrno',
+#       'maddstname', 'maddstr', 'maddstsuf', 'maddsttyp', 'mapref', 
+#       'munit', 'ownfrst', 'ownlast', 'owntype', 'parusedsc2', 'revdatetx',
+#       'saddpref', 'scity', 'structno', 'subdivisio', 'subowntype', 'subsurfown', 'sunit',
+#       'szip', 'layer', 'path']
+#
+#all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
+#
+#
+#
+##3. MattOriginalMailing list is not actually his original, but it is a list I had from June 2019 with the 2+ removed, Subdivision, and Excluded Subdivision column in tact. 
+###This had already been joined to the county parcels so I will merge based on the nparno
+#all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='nparno', right_on='nparno')
+##
+###drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
+#
+#columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y','id_2','fid','id',
+# 'altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref','maddrno','maddstname',
+# 'maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y','parusecode_y','parusedesc_y',
+# 'parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y','saddno_y','saddpref','saddstname_y','saddstr_y',
+# 'saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y','scity','sourcedate_y','sourcedatx_y','sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y',
+# 'struct_y','structno','structyear_y','subdivisio','subowntype','subsurfown','sunit','szip','transfdate_y','id_0','id_1','layer','path']
+#
+#all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
+#
+###the columns in all_2019_parcels get renamed (ex:altparno_x) so I rename them to keep things clean
+#all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyfips','cntyname_x': 'cntyname','gisacres_x': 'gisacres',
+#                                   'improvval_x': 'improvval','landval_x': 'landval','legdecfull_x': 'ledgecfull','multistruc_x': 'multistruc',
+#                                   'ownname2_x': 'ownname2','parno_x': 'parno','parusecd2_x': 'parusecd2','parusecode_x': 'parusecode','parusedesc_x': 'parusedesc',
+#                                   'parval': 'parval','parvaltype_x': 'parvaltype','presentval_x': 'presentval','recareano_x': 'recareano',
+#                                   'recareatx_x': 'recareatx','revisedate_x': 'revisedate','reviseyear_x': 'reviseyear','saddno_x': 'saddno',
+#                                   'saddstname_x': 'saddstname','saddstr_x': 'saddstr','saddstsuf_x': 'saddstsuf','saddsttyp_x': 'saddsttyp',
+#                                   'saledate_x': 'saledate','saledatetx_x': 'saledatetx','sourceagnt_x': 'sourceagnt','sourcedate_x': 'sourcedate',
+#                                   'sourcedatx_x': 'sourcedatx','sourceref_x': 'sourceref','sstate_x': 'sstate','stcntyfips_x': 'stcntyfips','stfips_x': 'stfips',
+#                                   'stname_x': 'stname','struct_x': 'struct','structyear_x': 'structyear','transfdate_x': 'transfdate'},
+#                                    inplace=True)
+#
+#
+#
+#
+#
+#
+#
+##3. Create Vacant Land Property Type
+#
+##create 'Property Type' column and populate with true/false  alues
+#all_2019_parcels['Property Type'] = all_2019_parcels['landval'] == all_2019_parcels['parval']
+#
+##change true/false values to 'Vacant Land' or no value. There are 95593 vacant land parcels.
+#all_2019_parcels.loc[(all_2019_parcels['Property Type'] == True), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['Property Type'] == False), 'Property Type'] = ''
+#
+#
+##Label others from Watauga County using parusedesc. Now there are 95783 vacant land parcels (added about 200 parcels)
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'RESIDENTIAL VACANT'), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'AGRICULTURAL-VACANT'), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'APARTMENT LAND VACANT'), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'COMMERCIAL LAND VACANT'), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'INDUSTRIAL TRACT VACANT'), 'Property Type'] = 'Vacant Land'
+#all_2019_parcels.loc[(all_2019_parcels['parusedesc'] == 'UTILITY VACANT LAND'), 'Property Type'] = 'Vacant Land'
+#
+##make vacant land dataframe
+#vacant_land_df = all_2019_parcels[all_2019_parcels['Property Type'] == 'Vacant Land']
+###drop non-vacant land parcels from all_2019_parcels
+#all_2019_parcels = all_2019_parcels[all_2019_parcels['Property Type'] != 'Vacant Land']
+#
+#
+##vacant land filters: 1-10 acres and >100k. >10acres and >200k. 'gisacres' column
+#filter1 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 1) & (vacant_land_df['gisacres'] < 10) & (vacant_land_df['parval'] > 100000)]
+#filter2 = vacant_land_df.loc[(vacant_land_df['gisacres'] > 10) & (vacant_land_df['parval'] > 200000)]
+#
+##we are left with 4787 vacant land parcels
+#vacant_land_df = pd.concat([filter1, filter2])
+#
+#
+#
+#
+##4. Label condo buildings as 'Property Type' = 'Condo Building'
+##first, read in condos list
+##uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
+#condo_building_ids = module.condo_buildings_list(condos_list_2019)
+#
+##iterate over list (condo_building_ids) and add 'Property Type' of 'Condo Building'
+#all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
+#
+##remove condo buildings from list
+#all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Vacant Land']
+#
+#
+##export to shapefile
 #all_2019_parcels = gpd.GeoDataFrame(all_2019_parcels, geometry='geometry')
-#move this to PostgreSQL database as new 'all_2019_parcels'
-
+##move this to PostgreSQL database as new 'all_2019_parcels'
+#
 #vacant_land_df = gpd.GeoDataFrame(vacant_land_df, geometry='geometry')
 
 ##FINAL RESULT FROM THIS IS allkeepers_2019 and vacant_land_df
 
 
+
+
+#5. GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
+#Also with vacant_land_df, clip parcels to extent of AllZonesExtent
+
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#6. Create other new columns. Gray out everything above!
-
-#Start by reading in allkeepers_2019
+##6. Create other new columns. Gray out everything above!
+#
+##Start by reading in allkeepers_2019
 #all_keepers_2019 = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/all_keepers_2019/all_keepers_2019.gpkg')
-
-
-
-# This includes Property type ('Home', 'Vacant Land', 'Condo'). VacantLandValue (>100k and <200k)
-
-#rename 'property t' column (I am not sure why it becomes this after Postgres Filtering)
+#
+#
+#
+## This includes Property type ('Home', 'Vacant Land', 'Condo'). VacantLandValue (>100k and <200k)
+#
+##rename 'property t' column (I am not sure why it becomes this after Postgres Filtering)
 #all_keepers_2019['Property Type'] = all_keepers_2019['property t']
 ##drop 'property t' column
 #all_keepers_2019.drop('property t', inplace=True, axis=1)
-
+#
 ##drop townhomes. The vast majority of these are already in Matt's Condo list
 #all_keepers_2019 = all_keepers_2019[all_keepers_2019['parusedesc'] != 'TOWNHOUSE']
 ###Make sure I got all Townhomes in Watauga County in condos list just in case
 ###all_keepers_2019.loc[(all_keepers_2019['parusedesc'] == 'TOWNHOUSE'), 'Property Type'] = 'Townhome'
-
-
-
+#
+#
+#
 ##all other parcels will be given the Property Type value of 'Home / Potentially not residential'. This includes a lot of non-residential properties but these will be filtered out later
 #all_keepers_2019.loc[all_keepers_2019['Property Type'].isnull(), 'Property Type'] = 'Home / Potentially Not Residential'
 #
@@ -210,16 +210,16 @@ all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Va
 #all_keepers_2019.loc[(all_keepers_2019['Property Type'] == 'Vacant Land') & (all_keepers_2019['parval'] > 100000), 'Vacant Land Value'] = '> $100k'
 #all_keepers_2019.loc[(all_keepers_2019['Property Type'] == 'Vacant Land') & (all_keepers_2019['parval'] > 200000), 'Vacant Land Value'] = '> $200k'
 #
-##
+#
 #
 ##Create the 'owner moved' column by comparing the 2018 Mailing Address to the 2019 Mailing Address
 ##First build full Mailing Address column for 2018 data
-#all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['MAILING ADDRESS'] + ' ' + all_2018_parcels['MAILING CITY'] + ' ' + all_2018_parcels['MAILING STATE']
-#all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_2018'].str.replace(' ','')   #got rid of all spaces for simplicity
-#
-##build full mailing address for all_2019_parcels
-#all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['mailadd'] + ' ' + all_keepers_2019['mcity'] + ' ' + all_keepers_2019['mstate']
-#all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
+##all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['MAILING ADDRESS'] + ' ' + all_2018_parcels['MAILING CITY'] + ' ' + all_2018_parcels['MAILING STATE']
+##all_2018_parcels['FullMailAddress_2018'] = all_2018_parcels['FullMailAddress_2018'].str.replace(' ','')   #got rid of all spaces for simplicity
+##
+###build full mailing address for all_2019_parcels
+##all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['mailadd'] + ' ' + all_keepers_2019['mcity'] + ' ' + all_keepers_2019['mstate']
+##all_keepers_2019['FullMailingAddress_2019'] = all_keepers_2019['FullMailingAddress_2019'].str.replace(' ','')   #got rid of all spaces for simplicity
 #
 #
 ##COME BACK TO THIS. OWNER MOVED COLUMN
@@ -267,7 +267,10 @@ all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Va
 #                    'JEFFERSON TOWN OF','BANNER ELK, TOWN OF','LANSING TOWN OF','NEWLAND, TOWN OF','TOWN OF BLOWING ROCK','TOWN OF SPARTA','WEST JEFFERSON TOWN OF','BANNER ELK, TOWN OF','JEFFERSON TOWN OF','LANSING TOWN OF','NEWLAND, TOWN OF', 'SUN FARMS INC', 'NORTH CAROLINA DEPARTMENT OF TRANSPORTATION', 'DOLLAR FARMS INC', 'STATE OF NC',
 #                    'OLEANDER COMPANY THE', 'CHESTER BAR OF NORTH CAROLINA', 'AVERY DEVELOPMENT CORPORATION', 'AVERY TIMBER RESOURCES, LLC 1/2 PHILLIPS, MARTHA ETAL 1/2', 'NATURE CONSERVANCY THE', 'BLUE RIDGE CONSERVANCY', 'NORTH CAROLINA STATE OF', 'NORTH CAROLINA WILDERNESS LTD', 'BANNER ELK LOWES LLC',
 #                    'LONE OAK CORPORATION', 'INN AT CRESTWOOD INC', 'LUTHERIDGE LUTHEROCK MINISTRY INC','SHOPPES OF TYNECASTLE, LLC', 'HALCORE GROUP INC.','ALLEGHANY WELLNESS CENTER, INC.', 'HOLSTON PRESBYTERY CAMP CORP','BOWER & JOHNSON CORP', 'CHARMING INNS OF BLOWING ROCK HILLWINDS', 'LANSING CHEMI-CON INC', 'ASHE SENIOR VILLAGE INC',
-#                    'GOODWILL INDUSTRIES OF NORTHWEST', 'CORNERSTONE CHRISTIAN FELLOWSHIP INC.', 'WILBERN REALTY & INVESTMENT CO', 'WEST JEFFERSON HOUSING PARTNERSHIP','CALDWELL REALTY & INVESTMENT', ]
+#                    'GOODWILL INDUSTRIES OF NORTHWEST', 'CORNERSTONE CHRISTIAN FELLOWSHIP INC.', 'WILBERN REALTY & INVESTMENT CO', 'WEST JEFFERSON HOUSING PARTNERSHIP','CALDWELL REALTY & INVESTMENT', 'PROPERTIES FOR CHILDREN', 'SMITHS AEROSPACE COMPONENTS INC', 'HENDERSONVILLE HEALTH CARE FACILITY', 'LINVILLE LAND HARBORS PROPERTY OWNERS ASSOCIATION',
+#                    'ASHE SERVICES FOR AGING FOUNDATION', 'LEES MC RAE COLLEG, INC', 'BLUE RIDGE HOUSING OF ELK PARK', 'N C DEPT OF ADMIN FOREST SERVICE', 'SHOPPES OF TYNECASTLE,LLC', 'BLUE RIDGE ELECTRIC MEMBERSHIP CORPORATION', 'INGLES MARKETS INC # 83', 'WENTWORTH REALTY SERVICES, LLC','LEES MC RAE COLLEGE, INC','BANNER ELK LOWES, LLC',
+#                    'BLUE RIDGE HOUSING OF ASHE LLC','BJW 1 REALTY, LLC','BLOWING ROCK REALTY & INS INC','BLOWING ROCK REALTY INC','BROYHILL REALTY INC'  'CALDWELL REALTY','CASH REALTY LLC','DIAMOND REALTY PARTNERS IV LLC','DRG REALTY INC.','EUREY, KATHERINE E ET AL,IDEAL REALTY','M & T MOUNTAIN REALTY, LLC','MC MANUS & ASSOCIATES REALTY, LLC',
+#                    'MMW REALTY LLC','PRAGER REALTY III, LLC','WEST JEFFERSON REALTY LLC','WILBERN REALTY & INVESTMENT','GRIFFITH, E C CO REALTORS','SUGAR MOUNTAIN SKI RESORT, LLC','BLUE RIDGE CONSERVACY','SLOOP MEDICAL OFFICE PLAZA CONDOMINIUM ASSOC.' ]
 #
 ##drop rows with these ownname from all_keepers_2019. Drops 335 rows
 #for owner_name in bad_owner_names:
@@ -285,3 +288,28 @@ all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Va
 
 
 
+
+#10. Drop Undesireable parcels from vacant_land_keepers based on owner name
+#read in vacant land keepers
+vacant_land_keepers = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/all_keepers_2019/vacant_land_keepers.gpkg')
+
+bad_parusedesc = ['COMMERCIAL AUXILIARY IMPROVEMENT','COMMERCIAL LAND VACANT','COMMERCIAL UNDER CONSTRUCTION','EDUCATION','EDUCATION RELIGIOUS','ELECTRIC UTILITY','GOVERNMENT','HEALTH SPA','INDUSTRIAL TRACT VACANT','RELIGIOUS','UTILITY VACANT LAND','WAREHOUSE WITH INTERIOR OFFICE SPACE']
+
+for parusedesc in bad_parusedesc:
+    vacant_land_keepers.drop(vacant_land_keepers[vacant_land_keepers['parusedesc'] == parusedesc].index, inplace=True)
+
+
+
+#don't do this yet. Matt will give more direction
+bad_owner_names = ['WATAUGA COUNTY','WATAUGA BUILDING SUPPLY INC.','WATAUGA MEDICAL CENTER INC','WATAUGA OPPORTUNITIES INC.','REYNOLDS BLUE RIDGE PROP OWNERS ASSO INC','REYNOLDS BLUE RIDGE PROPERTY OWNERS ASSN','APPALACHIAN STATE UNIV FOUND,MCKINNEY ALUMNI CENTER','APPALACHIAN STATE UNIV FOUND,MCKINNEY ALUMNI CENTER','APPALACHIAN STATE UNIVERSITY FOUNDATION',
+                   'BOARD OF TRUSTEES OF THE ENDOWMENT FUND ,.APPALACHIAN STATE UNIVERSITY BOARD OF T','BOARD OF TRUSTEES OF THE ENDOWMENT FUND,.APPALACHIAN STATE UNIVERSITY BOARD OF T','NORTH CAROLINA, STATE OF','STATE EMPLOYEES CREDIT UNION','STATE OF NC','STATE OF NC PROPERTY OFFICE','STATE OF NC,STATE PROPERTY OFFICE','STATE OF NORTH CAROLINA',
+                   'STATE OF NORTH CAROLINA C/O STATE PROPERTY OFFICE','STATE OF NORTH CAROLINA THE','UNITED STATED OF AMERICA','UNITED STATES AGRICULTURE','UNITED STATES DEPT OF INTERIOR','UNITED STATES FOREST SERVICE','UNITED STATES OF AMERICA','NATURE CONSERVANCY','NATURE CONSERVANCY THE','NATURE CONSERVANCY, THE','NC NATURE CONSERVANCY','AVERY DEVELOPMENT CORPORATION',
+                   'COUNTY OF AVERY','COUNTY OF ASHE','COUNTY OF ASHE THE','CALDWELL COUNTY','ASHE COUNTY OF','ASHE COUNTY BOARD OF EDUCATION','WATAUGA COUNTY','NC','NC DEPARTMENT OF TRANSPORTATION','CHESTER BAR OF NORTH CAROLINA','USA','OLEANDER COMPANY THE','APPALACHIAN SKI MTN INC','APPALACHIAN ADVENT CHRISTIAN ASSOCIATION','APPALACHIAN STATE UNIVERSITY',
+                    'LEES MC RAE COLLEGE FIXED ASSETS COORDINATOR','LEES MC RAE COLLEGE, INC','BALD MOUNTAIN BAPTIST CHURCH INC','BALD MOUNTAIN TRUST THE (TRUSTEES)','BANNER ELK PRESBYTERIAN CHURCH','DIVINE HOPE BAPTIST CHURCH','MORAVIAN CHURCH IN AMERICA S.P.','NORTH CAROLINA DEPARTMENT OF TRANSPORTATION','FOOTHILLS CONSERVANCY OF NORTH CAROLINA','LANTANA FLORIDA CORPORATION',
+                    'BLOWING ROCK REALTY & INS INC','CALDWELL REALTY','PRY REALTY LLC','WEST JEFFERSON REALTY LLC','WILBERN REALTY & INVESTMENT CO','YOUNG MEN''S CHRISTIAN ASSOCIATION','VILLAGE OF SUGAR MOUNTAIN','SUGAR MOUNTAIN RESORT INC','SOUTHERN APPALACHIAN HIGHLANDS CONSERVANCY','BLUE RIDGE CONSERVANCY','BLOWING ROCK COUNTRY CLUB','TOWN OF BLOWING ROCK',
+                    'INDEPENDENCE LUMBER COMPANY INC.','JEFFERSON DEVELOPMENT CORPORATION','JENSEN HOLDINGS, INC A FLORIDA CORP.','L&S LAND CORPORATION','ELK CREEK DEVELOPMENT COMPANY OF BANNER ELK, LLC','FIRST CITIZENS BANK & TRUST COMPANY','GENTRY CONSTRUCTION COMPANY INC.','R & R BUILDERS COMPANY OF NORTH CAROLINA','R&R BUILDERS COMPANY OF NORTH CAROLINA','THE HIGHLANDER COMPANY',
+                    'HIGH POINT BANK & TRUST CO SUCCESSOR TR,THE T HENRY WILSON FAMILY TRUST', 'AVERY REAL PROPERTIES, LLC','CFFC REAL ESTATE LLC','GENTRY FAMILY REAL ESTATE, LLC','GRIFFITH, E C CO REALTORS'  ]
+
+
+for owner_name in bad_owner_names:
+    vacant_land_keepers.drop(vacant_land_keepers[vacant_land_keepers['ownname'] == owner_name].index, inplace=True)
