@@ -31,10 +31,11 @@ import BRE_Workflow_Functions as bwf
 #   -Matt's original mailing list (MattOriginalMailingList.xlsx)
 #   -Matt's original condo list (MattCondoAddressList2019.xlsx)
 #   -All parcels (/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg)
-#
+
+#matt's original mailing list aka 'new list'
 original_mailing_list = pd.read_excel('/Users/ep9k/Desktop/BRE/BRE 2019/MattOriginalMailingList.xlsx')          #11,827 addresses
 all_2019_parcels = gpd.read_file('/Users/ep9k/Desktop/BRE/BRE 2019/All_Parcels_2019.gpkg')                   #228,393 parcels
-all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
+#all_2018_parcels = pd.read_csv('/Users/ep9k/Desktop/BRE/2018Keepers.csv')                                    #17417 parcels
 condos_list_2019 = pd.read_excel(r'/Users/ep9k/Desktop/BRE/BRE 2019/MattCondoAddressList2019.xlsx')          #3139 parcels
 
 
@@ -50,18 +51,20 @@ all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
 
 
-#3. MattOriginalMailing list is not actually his original, but it is a list I had from June 2019 with the 2+ removed, Subdivision, and Excluded Subdivision column in tact. 
+#3. MattOriginalMailing list is not actually his original, but it is a list we have edited (most recent 4/18/2020) with 2+ removed and Subdivision columns in tact. 
 ##This had already been joined to the county parcels so I will merge based on the nparno
-all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='nparno', right_on='nparno')
-#
-##drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
+all_2019_parcels = all_2019_parcels.merge(original_mailing_list, how='left', left_on='parno', right_on='parno')
 
-columns_to_drop = ['LAST NAME','FIRST NAME','MAILING ADDRESS','MAILING CITY','MAILING STATE','MAILING ZIPCODE','PARCEL VALUE','PROPERTY ADDRESS','sourceagnt_y','id_2','fid','id',
- 'altparno_y','cntyfips_y','cntyname_y','gisacres_y','ownname2_y','gnisid','improvval_y','landval_y','legdecfull_y','maddpref','maddrno','maddstname',
- 'maddstr','maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parno_y','parusecd2_y','parusecode_y','parusedesc_y',
- 'parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y','revdatetx','revisedate_y','reviseyear_y','saddno_y','saddpref','saddstname_y','saddstr_y',
- 'saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y','scity','sourcedate_y','sourcedatx_y','sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y',
- 'struct_y','structno','structyear_y','subdivisio','subowntype','subsurfown','sunit','szip','transfdate_y','id_0','id_1','layer','path']
+#drop useless columns from all_2019_parcels. All I want to keep after the merge is the 2+ removed, subdivision, and excluded subdivision columns
+
+columns_to_drop = ['altparno_y','sourceagnt_y','Unnamed: 9','id_2','fid','id','cntyfips_y','gisacres_y','ownname2_y','gnisid', 'maddpref','maddrno','maddstname','maddstr',
+                   'maddstsuf','mapref','multistruc_y','munit','maddsttyp','ownfrst','ownlast','owntype','parusedsc2','parvaltype_y','presentval_y','recareano_y','recareatx_y',
+                   'revdatetx','revisedate_y','reviseyear_y','saddno_y','saddpref','saddstname_y','saddstr_y','saddstsuf_y','saddsttyp_y','saledate_y','saledatetx_y',
+                   'scity','sourcedate_y','sourcedatx_y','sourceref_y','sstate_y','stcntyfips_y','stfips_y','stname_y','structno','subdivisio','subowntype','subsurfown',
+                   'sunit','szip','transfdate_y','id_0','id_1','layer','path',  'cntyname_y','improvval_y','landval_y','legdecfull_y','nparno_y','parusecd2_y','parusecode_y',
+                   'parusedesc_y','struct_y','structyear_y']
+
+
 
 all_2019_parcels.drop(columns_to_drop, inplace=True, axis=1)
 
@@ -79,7 +82,7 @@ all_2019_parcels.rename(columns = {'altparno_x': 'altparno','cntyfips_x': 'cntyf
 
 
 
-#3. Create Vacant Land Property Type
+#4. Create Vacant Land Property Type
 
 #create 'Property Type' column and populate with true/false  alues
 all_2019_parcels['Property Type'] = all_2019_parcels['landval'] == all_2019_parcels['parval']
@@ -99,11 +102,11 @@ all_2019_parcels = all_2019_parcels[all_2019_parcels['Property Type'] != 'Vacant
 
 #apply filters to vacant land df
 vacant_land_df = bwf.vacant_land_filters(vacant_land_df)
-#we are left with 4787 vacant land parcels
+#we are left with 4811 vacant land parcels
 
 
 
-#4. Label condo buildings as 'Property Type' = 'Condo Building'
+#5. Label condo buildings as 'Property Type' = 'Condo Building'
 #first, read in condos list
 #uses condo_buildings_list function from BRE_condos_list folder (import statements at top)
 condo_building_ids = module.condo_buildings_list(condos_list_2019)
@@ -112,7 +115,7 @@ condo_building_ids = module.condo_buildings_list(condos_list_2019)
 all_2019_parcels.loc[all_2019_parcels['parno'].isin(condo_building_ids), 'Property Type'] = 'Condo Building'
 
 #remove condo buildings from list
-all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Vacant Land']
+all_2019_parcels = all_2019_parcels.loc[all_2019_parcels['Property Type'] != 'Condo Building']
 
 
 #export to shapefile
@@ -121,17 +124,17 @@ all_2019_parcels.to_file('/Users/ep9k/Desktop/all_2019_parcels.shp')
 #move this to PostgreSQL database as new 'all_2019_parcels'
 
 vacant_land_df = gpd.GeoDataFrame(vacant_land_df, geometry='geometry')
-#vacant_land_df.to_file('/Users/ep9k/Desktop/vacant_land.shp')
+vacant_land_df.to_file('/Users/ep9k/Desktop/vacant_land.shp')
 ##FINAL RESULT FROM THIS IS allkeepers_2019 and vacant_land_df
-
-
-
-
-#5. GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
-#output of this is all_keepers2019
-#Also with vacant_land_df, clip parcels to extent of AllZonesExtent
-#output of this is vacant_land_keepers
-
-
-
+#
+#
+#
+#
+##6. GO TO QGIS/POSTGRESQL with the all_2019_parcels and do the zones + price filtering
+##output of this is all_keepers2019
+##Also with vacant_land_df, clip parcels to extent of AllZonesExtent
+##output of this is vacant_land_keepers
+#
+#
+#
 
