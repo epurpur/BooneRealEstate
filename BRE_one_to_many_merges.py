@@ -46,7 +46,7 @@ matt_parcel_update_excel = matt_parcel_update_excel.drop_duplicates(subset='parn
 
 #merge list without duplicates (matt_parcel_update_excel) to all_2019_parcels (master_list)
 all_2019_parcels = all_2019_parcels.merge(matt_parcel_update_excel, how='left', left_on='parno', right_on='parno')
-
+#THERE ARE STILL SOME DUPLICATES. Duplicates still exist in all_2019_parcels
 
 
 columns_to_drop = ['id_0',
