@@ -228,7 +228,7 @@ for owner_name in bad_owner_names:
 
 #export Vacant land parcels to shapefile for use in PostgreSQL
 vacant_land_df = gpd.GeoDataFrame(vacant_land_df, geometry='geometry')
-vacant_land_df.to_file('/Users/ep9k/Desktop/vacant_land.shp')
+vacant_land_df.to_file('/Users/ep9k/Desktop/vacant_land_1.shp')
 
 
 
@@ -350,7 +350,7 @@ for owner_name in bad_owner_names:
 
 #export homes_df into shapefile for use in postgreSQL
 homes_df = gpd.GeoDataFrame(homes_df, geometry='geometry')
-homes_df.to_file('/Users/ep9k/Desktop/homes_df.shp')
+homes_df.to_file('/Users/ep9k/Desktop/homes_df_1.shp')
 
 
 print('Done!')
