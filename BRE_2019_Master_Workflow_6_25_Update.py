@@ -138,23 +138,9 @@ all_2019_parcels['siteadd'] = np.where((all_2019_parcels['siteadd'].isnull()), #
 
 
 
-# all_2019_parcels = gpd.read_postgis(('SELECT * FROM public."All_Parcels_2019" '), postgres_connection)
-
-# test_1a = gpd.read_postgis(('SELECT res.* FROM public."Zone1a" AS z1a, public."homes_df" AS res WHERE st_intersects(z1a.geom, res.geom)'), postgres_connection)
-
-# all_2019_parcels['Zone'] = test_1a['parno'].isin(all_2019_parcels['parno'])
-# all_2019_parcels.loc[all_2019_parcels['Zone'] == True, 'Zone'] = 'Zone1a'
-
 # all_2019_parcels = bwf.create_zone_column(all_2019_parcels)
 
-# DROP TABLE public."zone1akeepers";
-# SELECT res.* 
-# INTO Zone1aKeepers
-# FROM public."Zone1a" AS z1a, public."homes_df" AS res
-# WHERE st_intersects(z1a.geom, res.geom)
-# 	AND res.parval > 125000;
 
-###########################
 
 
 
