@@ -15,6 +15,8 @@ Steps:
 4. Create 'Nearest Feature' column. To do this I compare distance to either new or watauga river. First I choose distance that is shortest. Then depending whether this is new or watauga river I take that distance and the 'distance to feature'
 
 5. Drop unnecessary columns
+
+6. Rename columns so they match to Salesforce columns
 """
 
 import pandas as pd
@@ -64,6 +66,46 @@ new_2021_parcels_df.loc[new_2021_parcels_df['Distance To Feature'] == 'Watauga R
 
 
 # remove unneeded columns
-columns_to_drop = ['NewRiver', 'WataugaRiver', 'DistToNewRiver', 'DistToWataugaRiver', 'new_2021_p', 'added_geom']
+columns_to_drop = ['NewRiver', 'WataugaRiver', 'DistToNewRiver', 'DistToWataugaRiver', 'new_2021_p', 'added_geom', 'fid']
 new_2021_parcels_df.drop(columns_to_drop, inplace=True, axis=1)
+
+
+
+# rename columns so they match to Salesforce column names
+new_2021_parcels_df.rename(columns={'id': 'ID',
+                                 'altparno': 'ALTERNATIVE_PARCEL_NUMBER__C',
+                                 'cntyname': 'COUNTY__C',
+                                 'gisacres': 'ACRES__C',
+                                 'improvval':'IMPROVEMENT_VALUE_C',
+                                 'landval':'LAND_VALUE__C',
+                                 'mailadd': 'MAILING_ADDRESS__C',
+                                 'mcity': 'MAILING_CITY__C',
+                                 'mstate': 'MAILING_STATE__C',
+                                 'mzip': 'MAILING_POSTAL_CODE__C',
+                                 'parno': 'NAME',
+                                 'parusecd2': 'PARCEL_USE_CODE_2__C',
+                                 'parval': 'PARCEL_VALUE__C',
+                                 'revisedate':'REVISE_DATE__C',
+                                 'reviseyear': 'REVISE_YEAR__C',
+                                 'saledate': 'SALE_DATE__C',
+                                 'siteadd': 'PBA__ADDRESS_PB__C',
+                                 'sourcedatx': 'SOURCE_DATE__C',
+                                 'sstate': 'PBA__STATE_PB__C',
+                                 'Property Type': 'PBA_PROPERTYTYPE__C',
+                                 'longitude': 'GEOLOCATION__LONGITUDE__S',
+                                 'latitude': 'GEOLOCATION__LATITUDE__S',
+                                 'Custom Area': 'CUSTOM_AREA__C',
+                                 'Zone': 'ZONE__C',
+                                 'geometry': 'GEOMETRY_SHAPE__C',
+                                 'Nearest Feature': 'NEAREST_FEATURE__C',
+                                 'Distance To Feature': 'DISTANCE_TO_FEATURE__C'
+                                }, inplace=True)
+    
+
+#create a couple columns that don't exist yet
+new_2021_parcels_df['PBA__LATITUDE_PB__C'] = new_2021_parcels_df['GEOLOCATION__LATITUDE__S']
+new_2021_parcels_df['PBA__LONGITUDE_PB__C'] = new_2021_parcels_df['GEOLOCATION__LONGITUDE__S']
+
+
+
 

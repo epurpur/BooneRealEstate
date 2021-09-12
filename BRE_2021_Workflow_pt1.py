@@ -105,7 +105,7 @@ old_parcels_update['LAND_VALUE__C'] = old_parcels_update['landval']
 # old_parcels_update['MAILING_ADDRESS__C'] = old_parcels_update['mailadd']                       #???????????
 old_parcels_update.loc[(old_parcels_update['test_add_check'] == False), 'MAILING_ADDRESS__C'] = old_parcels_update['mailadd']  #???????????????????
 
-# old_parcels_update['ALTERNATIVE_PARCEL_NUMBER__C'] = old_parcels_update['mapref']
+# old_parcels_update['ALTERNATIVE_PARCEL_NUMBER__C'] = old_parcels_update['mapref']old
 old_parcels_update['MAILING_CITY__C'] = old_parcels_update['mcity']
 old_parcels_update['MAILING_STATE__C'] = old_parcels_update['mstate']
 # old_parcels_update['ALTERNATIVE_PARCEL_NUMBER__C'] = old_parcels_update['multistruc']
