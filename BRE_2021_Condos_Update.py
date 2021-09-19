@@ -5,6 +5,7 @@ import pandas as pd
 import sys
 sys.path.append('/Users/ep9k/Desktop/BRE/BRE 2019/BRE_Condos_List/scripts')
 import CountyFunctions as cf
+import re
 
 
 # # 1. Read in 2021 parcels data
@@ -175,5 +176,36 @@ all_condos = pd.concat(dataframes)
 
 #export all_condos to desktop
 # all_condos.to_excel('/Users/ep9k/Desktop/all_condos.xlsx')
+
+
+
+
+
+
+
+
+
+
+
+##### REGEX MATCHING
+test = watauga_condos.head(100)
+test_condo_addresses = test['UpdatedMailingAddress'].tolist()
+
+end_result = []
+
+pattern = re.compile(r'([A-Z0-9 .-]+) (\w+) (\w{2}) (\d{5})')
+# pattern = re.compile(r'(\d{5})')
+
+for address in test_condo_addresses:
+    matches = pattern.finditer(address)
+    for match in matches:
+        end_result.append(match)
+        print(f'{match.group(1)}, {match.group(2)}, {match.group(3)}, {match.group(4)}')
+    
+
+
+
+
+
 
 
