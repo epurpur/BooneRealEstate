@@ -81,16 +81,16 @@ geolocation_gdf = gpd.GeoDataFrame(geolocation_df, geometry=gpd.points_from_xy(g
 
 
 ########################## 4:  Make sure all layers and geodataframes have same CRS ##########################
-wkt_gdf = wkt_gdf.set_crs("epsg:4269")   
-geolocation_measured_gdf = geolocation_measured_gdf.set_crs("epsg:4269")
-geolocation_gdf = geolocation_gdf.set_crs("epsg:4269")
-custom_areas = custom_areas.to_crs(epsg=4269)
-zones = zones.to_crs(epsg=4269)
-creeks = creeks.to_crs(epsg=4269)
-watauga_lake = watauga_lake.to_crs(epsg=4269)
-new_river_south_fork = new_river_south_fork.to_crs(epsg=4269)
-new_river_north_fork = new_river_north_fork.to_crs(epsg=4269)
-watauga_river = watauga_river.to_crs(epsg=4269)
+wkt_gdf = wkt_gdf.set_crs("epsg:32617")   
+geolocation_measured_gdf = geolocation_measured_gdf.set_crs("epsg:32617")
+geolocation_gdf = geolocation_gdf.set_crs("epsg:32617")
+custom_areas = custom_areas.to_crs(epsg=32617)
+zones = zones.to_crs(epsg=32617)
+creeks = creeks.to_crs(epsg=32617)
+watauga_lake = watauga_lake.to_crs(epsg=32617)
+new_river_south_fork = new_river_south_fork.to_crs(epsg=32617)
+new_river_north_fork = new_river_north_fork.to_crs(epsg=32617)
+watauga_river = watauga_river.to_crs(epsg=32617)
 
 
 
@@ -173,17 +173,33 @@ This also creates duplicates for those parcels that overlap 1 or more creeks
 Add a True of False (boolean) value in field 'CREEK_CHECKBOX__C' if a parcel intersects a creek
 """
 
-#fill 'None' value of no-name creeks with empty string
+# fill 'None' value of no-name creeks with empty string
 creeks['gnis_name'] = creeks['gnis_name'].fillna(value='')
 
+# for wkt_gdf, do spatial join for creeks
+wkt_gdf = wkt_gdf.sjoin(creeks, how='left', predicate='intersects')
+# remove duplicated indexes
+wkt_gdf = wkt_gdf[~wkt_gdf.index.duplicated(keep="first")]
+# rename 'gnis_name' column to 'CREEK_LOOKUP__C' column
+wkt_gdf['CREEK_LOOKUP__C'] = wkt_gdf['gnis_name']
+# drop unneeded columns
+columns_to_drop = [ 'index_right','OBJECTID','permanent_identifier','fdate','resolution','gnis_id',
+                   'gnis_name','lengthkm','reachcode','flowdir','wbarea_permanent_identifier','ftype','fcode','mainpath',
+                   'innetwork','visibilityfilter','SHAPE_Length','resolution_description','flowdir_description','mainpath_description',
+                   'innetwork_description','visibilityfilter_description','fcode_description']
+wkt_gdf.drop(columns_to_drop, axis=1, inplace=True)
+
+# for geolocation_measured_gdf and geolocation_gdf, I will use sjoin.nearest() to find distance to nearest creek
+geolocation_measured_gdf = geolocation_measured_gdf.sjoin_nearest(creeks, distance_col='distance_to_creek')
+# convert ft to miles for 'distance_to_creek' column
+geolocation_measured_gdf['distance_creek_mi'] = geolocation_measured_gdf['distance_to_creek'] * 0.000621371
 
 
+#####START HERE
 
-
-
-
-
-
+# test = geolocation_measured_gdf.head(100)
+# ax=test['geometry'].plot()
+# zones['geometry'].plot(ax=ax, color='green')
 
 
 
