@@ -7,9 +7,9 @@ nicer, cleaner, and more concise workflow using just pandas + geopandas and a fe
 This is the data/fields that I need to add to the tax parcels (in no particular order)...
     - Nearest Feature
     - Creek
-    - Custom Area
-    - Zone
-    - County 
+    - Custom Area X
+    - Zone   X
+    - County  X
     - Subdivision (coming soon?)
 
 Part of the issue with this data is that parcels have different geospatial fields
@@ -26,9 +26,10 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from shapely import wkt
-import BRE_Geopandas_Workflow_Mappers as mappers
+# import BRE_Geopandas_Workflow_Mappers as mappers
 
-parcels = pd.read_csv('/Users/ep9k/Desktop/geopandas_test/BRE_Test/all_bre_properties.csv')
+parcels = pd.read_csv('/Users/ep9k/Desktop/Boone 2023-03-17/37005-37009-37011-37027-37189-37193-47019-47091-2023-01-18.csv')
+
 custom_areas = gpd.read_file('/Users/ep9k/Desktop/geopandas_test/BRE_Test/Custom_Areas.gpkg')
 zones = gpd.read_file('/Users/ep9k/Desktop/geopandas_test/BRE_Test/Zones.gpkg')
 creeks = gpd.read_file('/Users/ep9k/Desktop/geopandas_test/BRE_Test/Creeks.gpkg')
@@ -41,8 +42,9 @@ counties = gpd.read_file('/Users/ep9k/Desktop/geopandas_test/BRE_Test/Counties.g
 # delete fields that I will recreate in this script
 # I exported this dataset out of salesforce so it already has the needed columns in the dataframe
 # I will recreate these columns later
-columns_to_drop = ['NEAREST_FEATURE_LOOKUP__C','CREEK_CHECKBOX__C', 'CREEK_LOOKUP__C', 'CUSTOM_AREA_LOOKUP__C', 'ZONE_LOOKUP__C', 'COUNTY_NAME_LOOKUP__C']
-parcels.drop(columns_to_drop, axis=1, inplace=True)
+
+#columns_to_drop = ['NEAREST_FEATURE_LOOKUP__C','CREEK_CHECKBOX__C', 'CREEK_LOOKUP__C', 'CUSTOM_AREA_LOOKUP__C', 'ZONE_LOOKUP__C', 'COUNTY_NAME_LOOKUP__C']
+#parcels.drop(columns_to_drop, axis=1, inplace=True)
 
 
 
@@ -54,12 +56,12 @@ This leaves us with three geodataframes.
     - If not, next are those with data in the Geolocation field (VZ__GEOLOCATION__LONGITUDE__S)
     - else, parcels with no geospatial data
     
-I need to separate out these 3 (4) categories and work with the independently
+I need to separate out these 3 (4) categories and work with them independently
 """
-wkt_df = parcels.loc[parcels['VZ__BOUNDARY_WKT__C'].notnull()]
-geolocation_measured_df = parcels.loc[(parcels['VZ__BOUNDARY_WKT__C'].isnull()) & (parcels['VZ__GEOLOCATION_MEASURED__LONGITUDE__S'].notnull())]
-geolocation_df = parcels.loc[(parcels['VZ__BOUNDARY_WKT__C'].isnull()) & (parcels['VZ__GEOLOCATION_MEASURED__LONGITUDE__S'].isnull()) & (parcels['VZ__GEOLOCATION__LONGITUDE__S'].notnull())]
-no_spatial_info = parcels.loc[(parcels['VZ__BOUNDARY_WKT__C'].isnull()) & (parcels['VZ__GEOLOCATION_MEASURED__LONGITUDE__S'].isnull()) & (parcels['VZ__GEOLOCATION__LONGITUDE__S'].isnull())]
+wkt_df = parcels.loc[parcels['vz__Boundary_Wkt__c'].notnull()]
+geolocation_measured_df = parcels.loc[(parcels['vz__Boundary_Wkt__c'].isnull()) & (parcels['vz__Geolocation_Measured__Longitude__s'].notnull())]
+geolocation_df = parcels.loc[(parcels['vz__Boundary_Wkt__c'].isnull()) & (parcels['vz__Geolocation_Measured__Longitude__s'].isnull()) & (parcels['vz__Geolocation_Mailing__Longitude__s'].notnull())]
+no_spatial_info = parcels.loc[(parcels['vz__Boundary_Wkt__c'].isnull()) & (parcels['vz__Geolocation_Measured__Longitude__s'].isnull()) & (parcels['vz__Geolocation_Mailing__Longitude__s'].isnull())]
 
 
 
@@ -71,18 +73,19 @@ def wkt_loads(x):
         return None
    
 #wkt_gdf
-wkt_df['geometry'] = wkt_df['VZ__BOUNDARY_WKT__C'].apply(wkt_loads)
+wkt_df['geometry'] = wkt_df['vz__Boundary_Wkt__c'].apply(wkt_loads)
 wkt_gdf = gpd.GeoDataFrame(wkt_df, geometry='geometry')
 
 #geolocation_measured_gdf
-geolocation_measured_gdf = gpd.GeoDataFrame(geolocation_measured_df, geometry=gpd.points_from_xy(geolocation_measured_df['VZ__GEOLOCATION_MEASURED__LONGITUDE__S'], geolocation_measured_df['VZ__GEOLOCATION_MEASURED__LATITUDE__S']))
+geolocation_measured_gdf = gpd.GeoDataFrame(geolocation_measured_df, geometry=gpd.points_from_xy(geolocation_measured_df['vz__Geolocation_Measured__Longitude__s'], geolocation_measured_df['vz__Geolocation_Measured__Latitude__s']))
 
 #geolocation_gdf
-geolocation_gdf = gpd.GeoDataFrame(geolocation_df, geometry=gpd.points_from_xy(geolocation_df['VZ__GEOLOCATION__LONGITUDE__S'], geolocation_df['VZ__GEOLOCATION__LATITUDE__S']))
+geolocation_gdf = gpd.GeoDataFrame(geolocation_df, geometry=gpd.points_from_xy(geolocation_df['vz__Geolocation_Mailing__Longitude__s'], geolocation_df['vz__Geolocation_Mailing__Latitude__s']))
 
 
 
 ########################## 4:  Make sure all layers and geodataframes have same CRS ##########################
+
 wkt_gdf = wkt_gdf.set_crs("epsg:4269")   
 geolocation_measured_gdf = geolocation_measured_gdf.set_crs("epsg:4269")
 geolocation_gdf = geolocation_gdf.set_crs("epsg:4269")
@@ -94,6 +97,7 @@ new_river_south_fork = new_river_south_fork.to_crs(epsg=4269)
 new_river_north_fork = new_river_north_fork.to_crs(epsg=4269)
 watauga_river = watauga_river.to_crs(epsg=4269)
 counties = counties.to_crs(epsg=4269)
+
 
 
 
@@ -115,9 +119,9 @@ geolocation_measured_gdf = geolocation_measured_gdf[~geolocation_measured_gdf.in
 geolocation_gdf = geolocation_gdf[~geolocation_gdf.index.duplicated(keep='first')]
 
 # rename 'custom area' column to Salesforce Name
-wkt_gdf['CUSTOM_AREA_LOOKUP__C'] = wkt_gdf['Name']
-geolocation_measured_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_measured_gdf['Name']
-geolocation_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_gdf['Name']
+wkt_gdf['CUSTOM_AREA_LOOKUP__C'] = wkt_gdf['Name_right']
+geolocation_measured_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_measured_gdf['Name_right']
+geolocation_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_gdf['Name_right']
 
 # fill NA values in 'custom area' column with 'Out of Area'
 wkt_gdf['CUSTOM_AREA_LOOKUP__C'] = wkt_gdf['CUSTOM_AREA_LOOKUP__C'].fillna(value='Out of Area')
@@ -125,7 +129,7 @@ geolocation_measured_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_measured_gdf['CU
 geolocation_gdf['CUSTOM_AREA_LOOKUP__C'] = geolocation_gdf['CUSTOM_AREA_LOOKUP__C'].fillna(value='Out of Area')
 
 # drop unneeded columns
-columns_to_drop = ['index_right','Name','layer','path']
+columns_to_drop = ['index_right','Name_right','layer','path']
 wkt_gdf.drop(columns_to_drop, axis=1, inplace=True)
 geolocation_measured_gdf.drop(columns_to_drop, axis=1, inplace=True)
 geolocation_gdf.drop(columns_to_drop, axis=1, inplace=True)
@@ -185,9 +189,9 @@ geolocation_measured_gdf = geolocation_measured_gdf[~geolocation_measured_gdf.in
 geolocation_gdf = geolocation_gdf[~geolocation_gdf.index.duplicated(keep="first")]
 
 # rename 'counties' column to 'COUNTY_NAME_LOOKUP__C'
-wkt_gdf['COUNTY_NAME_LOOKUP__C'] = wkt_gdf['NAME_right']
-geolocation_measured_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_measured_gdf['NAME_right']
-geolocation_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_gdf['NAME_right']
+wkt_gdf['COUNTY_NAME_LOOKUP__C'] = wkt_gdf['NAME']
+geolocation_measured_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_measured_gdf['NAME']
+geolocation_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_gdf['NAME']
 
 # fill NA values in 'County' column with 'Out of County'
 wkt_gdf['COUNTY_NAME_LOOKUP__C'] = wkt_gdf['COUNTY_NAME_LOOKUP__C'].fillna(value='Out of County')
@@ -195,47 +199,75 @@ geolocation_measured_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_measured_gdf['CO
 geolocation_gdf['COUNTY_NAME_LOOKUP__C'] = geolocation_gdf['COUNTY_NAME_LOOKUP__C'].fillna(value='Out of County')
 
 # drop unneeded columns
-columns_to_drop = ['index_right','STATEFP','COUNTYFP','COUNTYNS','GEOID','NAME_right','NAMELSAD','LSAD','CLASSFP',
+columns_to_drop = ['index_right','STATEFP','COUNTYFP','COUNTYNS','GEOID','NAME','NAMELSAD','LSAD','CLASSFP',
                    'MTFCC','CSAFP','CBSAFP','METDIVFP','FUNCSTAT','ALAND','AWATER','INTPTLAT','INTPTLON']
 wkt_gdf.drop(columns_to_drop, axis=1, inplace=True)
 geolocation_measured_gdf.drop(columns_to_drop, axis=1, inplace=True)
 geolocation_gdf.drop(columns_to_drop, axis=1, inplace=True)
 
 
-# ########################## 8: Add Creeks ##########################
-# """
-# Spatial join to add 'CREEK_LOOKUP__C' field with creek names to parcels
-# This is a left join which will keep parcels that are outside of the zones/areas
-# This also creates duplicates for those parcels that overlap 1 or more creeks
+########################## 8: Add Creeks ##########################
+"""
+Spatial join to add 'CREEK_LOOKUP__C' field with creek names to parcels
+This is a left join which will keep parcels that are outside of the zones/areas
+This also creates duplicates for those parcels that overlap 1 or more creeks
                      
-# Add a True of False (boolean) value in field 'CREEK_CHECKBOX__C' if a parcel intersects a creek
-# """
+Add a True of False (boolean) value in field 'CREEK_CHECKBOX__C' if a parcel intersects a creek
+"""
 
-# # fill 'None' value of no-name creeks with empty string
-# creeks['gnis_name'] = creeks['gnis_name'].fillna(value='')
+# fill 'None' value of no-name creeks with empty string
+creeks['gnis_name'] = creeks['gnis_name'].fillna(value='')
 
-# # for wkt_gdf, do spatial join for creeks
-# wkt_gdf = wkt_gdf.sjoin(creeks, how='left', predicate='intersects')
-# # remove duplicated indexes
-# wkt_gdf = wkt_gdf[~wkt_gdf.index.duplicated(keep="first")]
-# # rename 'gnis_name' column to 'CREEK_LOOKUP__C' column
-# wkt_gdf['CREEK_LOOKUP__C'] = wkt_gdf['gnis_name']
-# # drop unneeded columns
-# columns_to_drop = [ 'index_right','OBJECTID','permanent_identifier','fdate','resolution','gnis_id',
-#                    'gnis_name','lengthkm','reachcode','flowdir','wbarea_permanent_identifier','ftype','fcode','mainpath',
-#                    'innetwork','visibilityfilter','SHAPE_Length','resolution_description','flowdir_description','mainpath_description',
-#                    'innetwork_description','visibilityfilter_description','fcode_description']
-# wkt_gdf.drop(columns_to_drop, axis=1, inplace=True)
+# for wkt_gdf, do spatial join for creeks
+wkt_gdf = wkt_gdf.sjoin(creeks, how='left', predicate='intersects')
+# remove duplicated indexes
+wkt_gdf = wkt_gdf[~wkt_gdf.index.duplicated(keep="first")]
+# rename 'gnis_name' column to 'CREEK_LOOKUP__C' column
+wkt_gdf['CREEK_LOOKUP__C'] = wkt_gdf['gnis_name']
+# drop unneeded columns
+columns_to_drop = [ 'index_right','OBJECTID','permanent_identifier','fdate','resolution','gnis_id',
+                    'gnis_name','lengthkm','reachcode','flowdir','wbarea_permanent_identifier','ftype','fcode','mainpath',
+                    'innetwork','visibilityfilter','SHAPE_Length','resolution_description','flowdir_description','mainpath_description',
+                    'innetwork_description','visibilityfilter_description','fcode_description']
+wkt_gdf.drop(columns_to_drop, axis=1, inplace=True)
 
-# # for geolocation_measured_gdf and geolocation_gdf, I will use sjoin.nearest() to find distance to nearest creek
-# # geolocation_measured_gdf = geolocation_measured_gdf.sjoin_nearest(creeks, distance_col='distance_to_creek')
-# # convert ft to miles for 'distance_to_creek' column
+# for geolocation_measured_gdf and geolocation_gdf, I will use sjoin.nearest() to find distance to nearest creek
+# need to convert layers to a different CRS for measuring distance
+creeks = creeks.to_crs(epsg=2264)
+geolocation_measured_gdf = geolocation_measured_gdf.to_crs(epsg=2264)
+geolocation_gdf = geolocation_gdf.to_crs(epsg=2264)
 
+geolocation_measured_gdf = geolocation_measured_gdf.sjoin_nearest(creeks, distance_col='distance_to_creek')
+geolocation_gdf = geolocation_gdf.sjoin_nearest(creeks, distance_col='distance_to_creek')
 
-# #??????LOOK AT GEOMETRY OF geolocation_measured_gdf?
-# #TODO: look at geometry field of geolocation_gdf 
+# drop duplicates
+geolocation_measured_gdf = geolocation_measured_gdf[~geolocation_measured_gdf.index.duplicated(keep="first")]
+geolocation_gdf = geolocation_gdf[~geolocation_gdf.index.duplicated(keep="first")]
 
+# if distance greater than 0.2 miles, it is decided that the property is not on a creeka and value wil be empty. 1056 ft = 2 mi
+# overwriting geometry column from point data to polygon (buffer)
+geolocation_measured_gdf['geometry'] = geolocation_measured_gdf.buffer(1056)
+geolocation_gdf['geometry'] = geolocation_gdf.buffer(1056)
 
+#drop unneeded columns
+columns_to_drop = ['index_right','OBJECTID','permanent_identifier','fdate','resolution','gnis_id','gnis_name','lengthkm','reachcode','flowdir','wbarea_permanent_identifier',
+                   'ftype','fcode','mainpath','innetwork','visibilityfilter','SHAPE_Length','resolution_description','flowdir_description','mainpath_description','innetwork_description',
+                   'visibilityfilter_description','fcode_description','distance_to_creek']
+geolocation_measured_gdf.drop(columns_to_drop, axis=1, inplace=True)
+geolocation_gdf.drop(columns_to_drop, axis=1, inplace=True)
+
+# do sjoin on buffer to see if creek in buffer. If so, then use that creek as 'nearest creek'
+# wkt_gdf = wkt_gdf.sjoin(counties, how='left', predicate='intersects')
+geolocation_measured_gdf = geolocation_measured_gdf.sjoin(creeks, how='left', predicate='intersects')
+geolocation_gdf = geolocation_gdf.sjoin(creeks, how='left', predicate='intersects')
+
+# remove duplicated indexes
+geolocation_measured_gdf = geolocation_measured_gdf[~geolocation_measured_gdf.index.duplicated(keep="first")]
+geolocation_gdf = geolocation_gdf[~geolocation_gdf.index.duplicated(keep="first")]
+
+# rename 'gnis_name' column to 'CREEK_LOOKUP__C' column
+geolocation_measured_gdf['CREEK_LOOKUP_C'] = geolocation_measured_gdf['gnis_name']
+geolocation_gdf['CREEK_LOOKUP__C'] = geolocation_gdf['gnis_name']
 
 
 
