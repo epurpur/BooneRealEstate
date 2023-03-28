@@ -489,6 +489,50 @@ def map_creek_name(df):
     df.loc[df['CREEK_LOOKUP__C'] == 'Woodard Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgH2EAI'
     df.loc[df['CREEK_LOOKUP__C'] == 'Woodward Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgH3EAI'
     df.loc[df['CREEK_LOOKUP__C'] == 'Worley Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgH4EAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Little River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgHBEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Elk River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgH7EAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Little Doe River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgHAEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Doe River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fgH5EAI'
+    ### NEW CREEKS
+    df.loc[df['CREEK_LOOKUP__C'] == 'Scrawls Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXgEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Lunsford Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXlEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Yokum Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXmEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'North Fork McCann Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXqEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'South Fork McCann Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXnEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'North Fork Gentry Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXvEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Lick Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXoEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Low Gap Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXrEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork Beaverdam Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXhEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'West Fork Beaverdam Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXpEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Middle Fork Beaverdam Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqY5EAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'E H Phillippi Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYAEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Crooked Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYBEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork Slabtown Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYCEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork Fall Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXiEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'West Fork Dugger Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXwEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork Dugger Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXjEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Middle Fork Drake Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYFEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'West Fork Buttermilk Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXkEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'West Fork Pine Swamp Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYGEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork Cove Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXxEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Baird Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYKEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'South Fork Ellison Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYLEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Upper Laurel Fork', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYPEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Howard Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYDEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'North Fork Sawyer Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXyEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Middle Fork South Fork New River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqXzEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'East Fork South Fork New River', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYUEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'South Fork Laurel Creek', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYZEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Blevins Branch', 'CREEK_LOOKUP__C'] = 'a2E3u000000fqYVEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Yadkin River', 'NEAREST_FEATURE_LOOKUP__C'] = 'a2E3u000000fgHHEAY'
+    df.loc[df['CREEK_LOOKUP__C'] == 'North Pierce Branch', 'NEAREST_FEATURE_LOOKUP__C'] = 'a2E3u000000fqYyEAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Flat Branch', 'NEAREST_FEATURE_LOOKUP__C'] = 'a2E3u000000fqZ3EAI'
+    df.loc[df['CREEK_LOOKUP__C'] == 'New River', 'NEAREST_FEATURE_LOOKUP__C'] = 'a2E3u000000fPskEAE'
+    df.loc[df['CREEK_LOOKUP__C'] == 'Winkler Creek', 'NEAREST_FEATURE_LOOKUP__C'] = 'a2E3u000000fgGyEAI'
+    
+
+    
+
 
     return df
 
@@ -1015,7 +1059,7 @@ def map_subdivision_name(df):
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Patriot Place', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO2EAM'
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Paty Place', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO3EAM'
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pfeiffer Ridge Estates', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO3EAM'
-    df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pine Hill', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO5EAM
+    df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pine Hill', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO5EAM'
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pine Hill At Poplar Grove', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO6EAM'
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pine Ridge', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO7EAM'
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Pine Village', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPO8EAM'
@@ -1249,13 +1293,32 @@ def map_subdivision_name(df):
     df.loc[df['SUBDIVISION_LOOKUP__C'] == 'Young Hollow', 'SUBDIVISION_LOOKUP__C'] = 'a2E3u000000fPRqEAM'
 
 
+
     return df
 
 
 
-# df1 = convert_county_name(test_properties)
+def map_brand_name(df):
+    """ At least for now, the brand name is determined by the county name 
+    If county = Caldwell, Carter, Johnson, Watauga, Avery, Out of County. Brand = Boone Real Estate
+    If county = Ashe, Wilkes, Alleghany. Brand = Ashe Real Estate
+    """
     
+    # counties for Boone real estate 
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaJEAU', 'BRAND__C' ] = '0011I00000D3CJIQA3'   # caldwell
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSacEAE', 'BRAND__C' ] = '0011I00000D3CJIQA3'   # carter
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaZEAU', 'BRAND__C' ] = '0011I00000D3CJIQA3'   # johnson
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaYEAU', 'BRAND__C' ] = '0011I00000D3CJIQA3'  # watauga
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaSEAU', 'BRAND__C' ] = '0011I00000D3CJIQA3'   # avery
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fUvcEAE', 'BRAND__C' ] = '0011I00000D3CJIQA3'   # out of county
     
+    # counties for Ashe real estate
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaIEAU', 'BRAND__C' ] = '0013u00001ThJq6AAF'   # ashe
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaTEAU', 'BRAND__C' ] = '0013u00001ThJq6AAF'   # wilkes
+    df.loc[df['COUNTY_NAME_LOOKUP__C'] == 'a2E3u000000fSaXEAU', 'BRAND__C' ] = '0013u00001ThJq6AAF'   # alleghany
+
     
+    return df
+
 
 
