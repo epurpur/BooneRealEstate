@@ -59,10 +59,55 @@ gdf = gpd.GeoDataFrame(df_filtered, geometry=df_filtered['geometry'], crs='EPSG:
 # gdf.to_file('/Users/ep9k/Desktop/QGIS_TEST.gpkg', driver='GPKG', layer='VeezlaProperties')
 
 #######START HERE
-# compare to counties. Need to import county data
-caldwell = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Caldwell_County.gpkg')
-joined = gpd.sjoin(gdf, caldwell, how='left', op='within')
+# Remove geometries that are None
+gdf = gdf[~gdf.geometry.isna()]
+bad_data = gdf[gdf.geometry.isna()]
 
+# compare to counties. Need to import county data
+ashe = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Ashe_County.gpkg')
+avery = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Avery_County.gpkg')
+alleghany = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Alleghany_County.gpkg')
+caldwell = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Caldwell_County.gpkg')
+watauga = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Watauga_County.gpkg')
+wilkes = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Wilkes_County.gpkg')
+johnson = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Johnson_County.gpkg')
+carter = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Carter_County.gpkg')
+
+
+#######START HERE
+gdf['County_Name_Lookup__c'] = 'out of area'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, ashe, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Ashe'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, avery, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Avery'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, alleghany, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Alleghany'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, caldwell, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Caldwell'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, watauga, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Watauga'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, wilkes, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Wilkes'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, johnson, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Johnson'
+# Perform spatial join
+intersecting = gpd.sjoin(gdf, carter, how='inner', op='intersects')
+# Update the 'County_Name_Lookup__c' column for intersecting rows
+gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Carter'
 
 
 
