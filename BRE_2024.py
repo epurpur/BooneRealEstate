@@ -7,6 +7,7 @@
 import pandas as pd
 import geopandas as gpd
 from shapely import wkt
+import BRE_2024_Lookup as Lookup
 
 #import data
 df = pd.read_csv('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE 2024/FullProperties-Export-2024-05-13-extract.csv')
@@ -55,59 +56,94 @@ df_filtered['geometry'] = df_filtered['vz__Boundary_Wkt__c'].apply(wkt_loads)
 #convert pandas dataframe to geopandas dataframe
 gdf = gpd.GeoDataFrame(df_filtered, geometry=df_filtered['geometry'], crs='EPSG:4269')
 
-# export geodataframe to file
-# gdf.to_file('/Users/ep9k/Desktop/QGIS_TEST.gpkg', driver='GPKG', layer='VeezlaProperties')
-
-#######START HERE
-# Remove geometries that are None
-gdf = gdf[~gdf.geometry.isna()]
-bad_data = gdf[gdf.geometry.isna()]
-
-# compare to counties. Need to import county data
-ashe = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Ashe_County.gpkg')
-avery = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Avery_County.gpkg')
-alleghany = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Alleghany_County.gpkg')
-caldwell = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Caldwell_County.gpkg')
-watauga = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Watauga_County.gpkg')
-wilkes = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Wilkes_County.gpkg')
-johnson = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Johnson_County.gpkg')
-carter = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Carter_County.gpkg')
 
 
-#######START HERE
-gdf['County_Name_Lookup__c'] = 'out of area'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, ashe, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Ashe'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, avery, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Avery'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, alleghany, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Alleghany'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, caldwell, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Caldwell'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, watauga, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Watauga'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, wilkes, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Wilkes'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, johnson, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Johnson'
-# Perform spatial join
-intersecting = gpd.sjoin(gdf, carter, how='inner', op='intersects')
-# Update the 'County_Name_Lookup__c' column for intersecting rows
-gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = 'Carter'
+
+# # compare to counties. Need to import county data
+# ashe = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Ashe_County.gpkg')
+# avery = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Avery_County.gpkg')
+# alleghany = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Alleghany_County.gpkg')
+# caldwell = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Caldwell_County.gpkg')
+# watauga = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Watauga_County.gpkg')
+# wilkes = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Wilkes_County.gpkg')
+# johnson = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Johnson_County.gpkg')
+# carter = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Carter_County.gpkg')
+
+
+# counties = {
+#     'ashe': (ashe, 'ashe'),
+#     'avery': (avery, 'avery'),
+#     'alleghany': (alleghany, 'alleghany'),
+#     'caldwell': (caldwell, 'caldwell'),
+#     'watauga': (watauga, 'watauga'),
+#     'wilkes': (wilkes, 'wilkes'),
+#     'johnson': (johnson, 'johnson'),
+#     'carter': (carter, 'carter'),
+# }
+
+#populate 'County_Name_Lookup__c' field
+#start with giving all values in 'County_Name_Lookup' field a value of "out of area"
+gdf['County_Name_Lookup__c'] = 'a2E3u000000fUvcEAE'
+
+#iterate over each custom area and perform spatial join to fill in column
+for county_name, (county_gdf, county_id) in Lookup.counties.items():
+    #Perform the spatial join
+    intersecting = gpd.sjoin(gdf, county_gdf, how='inner', op='intersects')
+    #Update the 'County_Name_Lookup__c' column for intersecting rows
+    gdf.loc[intersecting.index, 'County_Name_Lookup__c'] = county_id
+
+
+# populate 'Display_County_Name__c' field
+# start with giving all values an 'Out of County' value
+gdf['Display_County_Name__c'] = 'Out of County'
+
+#iterate over each custom area and perform spatial join to fill in column
+for county_name, (county_gdf, county_id) in Lookup.counties.items():
+    #Perform the spatial join
+    intersecting = gpd.sjoin(gdf, county_gdf, how='inner', op='intersects')
+    #Update the 'Display_County_Name__c' column for intersecting rows
+    gdf.loc[intersecting.index, 'Display_County_Name__c'] = county_name
+
+
+
+# populate 'Custom_Area_Lookup__c' field
+# Start by giving an 'Out of County' value 
+gdf['Custom_Area_Lookup__c'] = 'a2E3u000000fTeLEAU'
+
+#iterate over each custom area and perform spatial join to fill in column
+for area_name, (custom_area_gdf, area_id) in Lookup.custom_areas.items():
+    #perform the spatial join
+    intersecting = gpd.sjoin(gdf, custom_area_gdf, how='inner', op='intersects')
+    #update the 'Custom_Area_Lookup__c' column for intersecting rows
+    gdf.loc[intersecting.index, 'Custom_Area_Lookup__c'] = area_id
+
+
+
+
+#populate 'Display_Custom_Area__c' field
+# Start by giving all values "Out of Area" value
+gdf['Display_Custom_Area__c'] = 'Out of Area'
+
+#iterate over each custom area and perform spatial join to fill in column
+for area_name, (custom_area_gdf, area_id) in Lookup.custom_areas.items():
+    #perform the spatial join
+    intersecting = gpd.sjoin(gdf, custom_area_gdf, how='inner', op='intersects')
+    #update the 'Custom_Area_Lookup__c' column for intersecting rows
+    gdf.loc[intersecting.index, 'Display_Custom_Area__c'] = area_name
+    
+    
+#########START HERE. THIS ISNT WORKING#######
+#populate 'Display_Zone__c' field
+# start by giving all values 'out of zone' value
+gdf['Display_Zone__c'] = 'a2E3u000000fUvhEAE'
+
+#iterate over each zone and perform spatial join to fill in column
+for zone_name, (zone_gdf, zone_id) in Lookup.zones.items():
+    #perform the spatial join
+    intersecting = gpd.sjoin(gdf, zone_gdf, how='inner', op='intersects')
+    #update the 'Custom_Area_Lookup__c' column for intersecting rows
+    gdf.loc[intersecting.index, 'Display_Zone__c'] = zone_id
+
 
 
 
