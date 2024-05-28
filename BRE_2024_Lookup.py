@@ -251,3 +251,15 @@ zones = {
     'Zone7h': (Zone7h, 'a2E3u000000fSdwEAE')
 }
 
+
+
+
+# Nearest Features calculations
+wataugariver = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Nearest Features/WataugaRiver.gpkg')
+nforknewriver = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Nearest Features/NewRiverNorthFork.gpkg')
+sforknewriver = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Nearest Features/NewRiverSouthFork.gpkg')
+wataugalake = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Nearest Features/WataugaLake.gpkg')
+
+
+# Creeks
+minor_creeks = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Nearest Features/MinorCreeks_HighCountryArea.gpkg')

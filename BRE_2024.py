@@ -106,7 +106,7 @@ for county_name, (county_gdf, county_id) in Lookup.counties.items():
 
 
 
-# populate 'Custom_Area_Lookup__c' field
+# populate 'Custom_Area_Lookup__c' column
 # Start by giving an 'Out of County' value 
 gdf['Custom_Area_Lookup__c'] = 'a2E3u000000fTeLEAU'
 
@@ -120,7 +120,7 @@ for area_name, (custom_area_gdf, area_id) in Lookup.custom_areas.items():
 
 
 
-#populate 'Display_Custom_Area__c' field
+#populate 'Display_Custom_Area__c' column
 # Start by giving all values "Out of Area" value
 gdf['Display_Custom_Area__c'] = 'Out of Area'
 
@@ -132,9 +132,9 @@ for area_name, (custom_area_gdf, area_id) in Lookup.custom_areas.items():
     gdf.loc[intersecting.index, 'Display_Custom_Area__c'] = area_name
     
     
-#########START HERE. THIS ISNT WORKING#######
-#populate 'Display_Zone__c' field
+#populate 'Display_Zone__c' column
 # start by giving all values 'out of zone' value
+###### SHOULD THIS BE Zone_Lookup field?
 gdf['Display_Zone__c'] = 'a2E3u000000fUvhEAE'
 
 #iterate over each zone and perform spatial join to fill in column
@@ -143,8 +143,66 @@ for zone_name, (zone_gdf, zone_id) in Lookup.zones.items():
     intersecting = gpd.sjoin(gdf, zone_gdf, how='inner', op='intersects')
     #update the 'Custom_Area_Lookup__c' column for intersecting rows
     gdf.loc[intersecting.index, 'Display_Zone__c'] = zone_id
+    
+    
+    
+    
+
+# Nearest_Feature_Lookup__c column
+# Ensure all GeoDataFrames have the same CRS
+if not (Lookup.wataugariver.crs == Lookup.wataugalake.crs == Lookup.nforknewriver.crs == Lookup.sforknewriver.crs == gdf.crs):
+    Lookup.wataugariver = Lookup.wataugariver.to_crs(gdf.crs)
+    Lookup.wataugalake = Lookup.wataugalake.to_crs(gdf.crs)
+    Lookup.nforknewriver = Lookup.nforknewriver.to_crs(gdf.crs)
+    Lookup.sforknewriver = Lookup.sforknewriver.to_crs(gdf.crs)
+
+# Add a 'feature_name' column to each river/lake GeoDataFrame
+Lookup.wataugariver['feature_name'] = 'a2E3u000000fPmwEAE'
+Lookup.wataugalake['feature_name'] = 'Watauga Lake'
+Lookup.nforknewriver['feature_name'] = 'a2E3u000000fPsfEAE'
+Lookup.sforknewriver['feature_name'] = 'a2E3u000000fPskEAE'
+
+# Combine all rivers and lake into a single GeoDataFrame
+features = pd.concat([Lookup.wataugariver,Lookup.wataugalake, Lookup.nforknewriver, Lookup.sforknewriver], ignore_index=True)
+
+# Initialize the 'Nearest_Feature_Lookup__c' column in gdf
+gdf['Nearest_Feature_Lookup__c'] = 'None'
+
+# Function to find the intersecting feature
+def find_intersecting_feature(polygon, features):
+    if polygon is None or polygon.is_empty:
+        return 'None'
+    for _, feature in features.iterrows():
+        if polygon.intersects(feature.geometry):
+            return feature['feature_name']
+    return 'None'
+
+
+# Apply the function to each row in gdf
+gdf['Nearest_Feature_Lookup__c'] = gdf.geometry.apply(lambda polygon: find_intersecting_feature(polygon, features))
 
 
 
 
+# CREEKS
+# Ensure both GeoDataFrames have the same CRS
+if gdf.crs != Lookup.minor_creeks.crs:
+    Lookup.minor_creeks = Lookup.minor_creeks.to_crs(gdf.crs)
 
+# Initialize the columns in gdf
+gdf['Creek_Checkbox__c'] = 'FALSE'
+gdf['Creek_Lookup__c'] = 'None'
+
+# Function to check for intersection and update columns
+def check_creek_intersection(polygon, creeks):
+    if polygon is None or polygon.is_empty:
+        return 'FALSE', 'None'
+    for _, creek in creeks.iterrows():
+        if creek.geometry is not None and not creek.geometry.is_empty and polygon.intersects(creek.geometry):
+            return 'TRUE', creek['gnis_name']
+    return 'FALSE', 'None'
+
+# Apply the function to each row in gdf
+gdf[['Creek_Checkbox__c', 'Creek_Lookup__c']] = gdf.geometry.apply(
+    lambda polygon: pd.Series(check_creek_intersection(polygon, Lookup.minor_creeks))
+)
