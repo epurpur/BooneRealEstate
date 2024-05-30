@@ -27,9 +27,6 @@ columns_to_keep = [
  'Creek_Checkbox__c',
  'Creek_Lookup__c',
  'Custom_Area_Lookup__c',
- 'Display_County_Name__c',
- 'Display_Custom_Area__c',
- 'Display_Zone__c',
  'Id',
  'Name',
  'Nearest_Feature_Lookup__c',
@@ -59,27 +56,7 @@ gdf = gpd.GeoDataFrame(df_filtered, geometry=df_filtered['geometry'], crs='EPSG:
 
 
 
-# # compare to counties. Need to import county data
-# ashe = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Ashe_County.gpkg')
-# avery = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Avery_County.gpkg')
-# alleghany = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Alleghany_County.gpkg')
-# caldwell = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Caldwell_County.gpkg')
-# watauga = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Watauga_County.gpkg')
-# wilkes = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Wilkes_County.gpkg')
-# johnson = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Johnson_County.gpkg')
-# carter = gpd.read_file('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE_GIS_Data/Counties/Carter_County.gpkg')
 
-
-# counties = {
-#     'ashe': (ashe, 'ashe'),
-#     'avery': (avery, 'avery'),
-#     'alleghany': (alleghany, 'alleghany'),
-#     'caldwell': (caldwell, 'caldwell'),
-#     'watauga': (watauga, 'watauga'),
-#     'wilkes': (wilkes, 'wilkes'),
-#     'johnson': (johnson, 'johnson'),
-#     'carter': (carter, 'carter'),
-# }
 
 #populate 'County_Name_Lookup__c' field
 #start with giving all values in 'County_Name_Lookup' field a value of "out of area"
@@ -132,17 +109,16 @@ for area_name, (custom_area_gdf, area_id) in Lookup.custom_areas.items():
     gdf.loc[intersecting.index, 'Display_Custom_Area__c'] = area_name
     
     
-#populate 'Display_Zone__c' column
+#populate 'Zone_Lookup__c column
 # start by giving all values 'out of zone' value
-###### SHOULD THIS BE Zone_Lookup field?
-gdf['Display_Zone__c'] = 'a2E3u000000fUvhEAE'
+gdf['Zone_Lookup__c'] = 'a2E3u000000fUvhEAE'
 
 #iterate over each zone and perform spatial join to fill in column
 for zone_name, (zone_gdf, zone_id) in Lookup.zones.items():
     #perform the spatial join
     intersecting = gpd.sjoin(gdf, zone_gdf, how='inner', op='intersects')
     #update the 'Custom_Area_Lookup__c' column for intersecting rows
-    gdf.loc[intersecting.index, 'Display_Zone__c'] = zone_id
+    gdf.loc[intersecting.index, 'Zone_Lookup__c'] = zone_id
     
     
     
@@ -158,7 +134,7 @@ if not (Lookup.wataugariver.crs == Lookup.wataugalake.crs == Lookup.nforknewrive
 
 # Add a 'feature_name' column to each river/lake GeoDataFrame
 Lookup.wataugariver['feature_name'] = 'a2E3u000000fPmwEAE'
-Lookup.wataugalake['feature_name'] = 'Watauga Lake'
+Lookup.wataugalake['feature_name'] = 'a2E3u000000fPmrEAE'
 Lookup.nforknewriver['feature_name'] = 'a2E3u000000fPsfEAE'
 Lookup.sforknewriver['feature_name'] = 'a2E3u000000fPskEAE'
 
@@ -185,24 +161,30 @@ gdf['Nearest_Feature_Lookup__c'] = gdf.geometry.apply(lambda polygon: find_inter
 
 
 # CREEKS
+#########START HERE. LOOK AT CREEKS AGAIN IN BRE_2024_LOOKUP FILE AND REDO THIS PART
 # Ensure both GeoDataFrames have the same CRS
 if gdf.crs != Lookup.minor_creeks.crs:
     Lookup.minor_creeks = Lookup.minor_creeks.to_crs(gdf.crs)
 
 # Initialize the columns in gdf
 gdf['Creek_Checkbox__c'] = 'FALSE'
-gdf['Creek_Lookup__c'] = 'None'
+gdf['Creek_Lookup__c'] = ''
 
 # Function to check for intersection and update columns
 def check_creek_intersection(polygon, creeks):
     if polygon is None or polygon.is_empty:
-        return 'FALSE', 'None'
+        return 'FALSE', ''
     for _, creek in creeks.iterrows():
         if creek.geometry is not None and not creek.geometry.is_empty and polygon.intersects(creek.geometry):
             return 'TRUE', creek['gnis_name']
-    return 'FALSE', 'None'
+    return 'FALSE', ''
 
 # Apply the function to each row in gdf
 gdf[['Creek_Checkbox__c', 'Creek_Lookup__c']] = gdf.geometry.apply(
     lambda polygon: pd.Series(check_creek_intersection(polygon, Lookup.minor_creeks))
 )
+
+
+
+# print('Exporting gdf')
+# gdf.to_csv('/Users/ep9k/Library/CloudStorage/OneDrive-UniversityofVirginia/BRE/BRE 2024/BRE_2024_update.csv')
