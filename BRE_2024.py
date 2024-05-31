@@ -161,7 +161,6 @@ gdf['Nearest_Feature_Lookup__c'] = gdf.geometry.apply(lambda polygon: find_inter
 
 
 # CREEKS
-#########START HERE. LOOK AT CREEKS AGAIN IN BRE_2024_LOOKUP FILE AND REDO THIS PART
 # Ensure both GeoDataFrames have the same CRS
 if gdf.crs != Lookup.minor_creeks.crs:
     Lookup.minor_creeks = Lookup.minor_creeks.to_crs(gdf.crs)
